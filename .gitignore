@@ -1,0 +1,31 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+.env.*
+
+# playwright
+test-results/
+playwright-report/
+e2e/.auth.json
+
+# The author's private rulebook: stays on disk, never goes to the repository
+CLAUDE.md

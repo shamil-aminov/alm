@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="alm">
+  <rect width="64" height="64" fill="#000"/>
+  <path d="M 10.53 18.89 L 19.02 27.38 L 27.5 18.89 M 36.5 18.89 L 44.98 27.38 L 53.47 18.89 M 23.51 35.17 L 32 43.66 L 40.49 35.17" fill="none" stroke="#fff" stroke-width="7"
+        stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"/>
+</svg>

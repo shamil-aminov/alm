@@ -1,0 +1,12 @@
+#!/bin/sh
+# Keep secrets out of the repository. .env.example and this hook carry example
+# text on purpose — skip them.
+staged=$(git diff --cached --name-only --diff-filter=ACM | grep -vE '(\.env\.example|^\.githooks/)')
+
+echo "$staged" | grep -qE '(^|/)\.env($|\.)' && { echo "pre-commit: .env stays out of git"; exit 1; }
+[ -z "$staged" ] && exit 0
+
+if git diff --cached -U0 -- $staged | grep -nE '^\+.*((AKIA|sk-|ghp_)[A-Za-z0-9]{16,}|session_token)'; then
+  echo "pre-commit: that looks like a secret"; exit 1
+fi
+exit 0
