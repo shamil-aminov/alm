@@ -25,6 +25,8 @@ export default defineConfig({
     env: { PORT: '3100' },
     url: BASE,
     reuseExistingServer: false,
+    stdout: 'pipe',
+    stderr: 'pipe',
     timeout: 180_000,
   },
 })

@@ -18,7 +18,8 @@ npm run generate   # .output/public
 npm run check      # types + browser tests, the one command that must stay green
 ```
 
-Node 20 or newer.
+Node 22.19+, 24.11+ or 26+ — the range Nuxt itself requires, and what
+`engines` in `package.json` states.
 
 ## Make it yours
 
