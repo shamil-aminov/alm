@@ -3,9 +3,7 @@ import { settled, TABS } from './helpers'
 
 const PHONE = { width: 390, height: 844 }
 
-// touchmove без CDP не отправить: page.touchscreen умеет только тапать, а в WebKit
-// нет конструктора Touch.
-const onlyChromium = (name: string) => test.skip(name !== 'chromium', 'нужен CDP')
+const onlyChromium = (name: string) => test.skip(name !== 'chromium', 'needs CDP')
 
 async function swipe(page: import('@playwright/test').Page, across: number, at = { x: 195, y: 600 }) {
   const touch = await page.context().newCDPSession(page)
@@ -15,30 +13,29 @@ async function swipe(page: import('@playwright/test').Page, across: number, at =
     await page.waitForTimeout(25)
   }
   await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
-  // Въезд страницы длится 950 мс: до его конца следующий палец попадает в уезжающее.
   await page.waitForTimeout(1100)
 }
 
 test('a swipe walks the sections and the favorite tabs as one chain', async ({ page }, info) => {
   onlyChromium(info.project.name)
-  test.skip(TABS.length < 2, 'нужны хотя бы две вкладки')
+  test.skip(TABS.length < 2, 'needs at least two tabs')
 
   await page.setViewportSize(PHONE)
   await page.goto('/projects')
   await settled(page)
 
   await swipe(page, -140)
-  expect(new URL(page.url()).pathname, 'из проектов не попали в любимое').toBe('/favorite')
-  expect(new URL(page.url()).searchParams.get('kind'), 'въехали не в первую вкладку').toBe(null)
+  expect(new URL(page.url()).pathname, 'a swipe from projects missed favorites').toBe('/favorite')
+  expect(new URL(page.url()).searchParams.get('kind'), 'it landed on a tab other than the first').toBe(null)
 
   await swipe(page, -140)
-  expect(new URL(page.url()).searchParams.get('kind'), 'вкладка не перелистнулась').toBe(TABS[1]!.kind)
+  expect(new URL(page.url()).searchParams.get('kind'), 'the tab did not turn').toBe(TABS[1]!.kind)
 
   await swipe(page, 140)
-  expect(new URL(page.url()).searchParams.get('kind'), 'назад по вкладкам').toBe(null)
+  expect(new URL(page.url()).searchParams.get('kind'), 'the tabs did not walk back').toBe(null)
 
   await swipe(page, 140)
-  expect(new URL(page.url()).pathname, 'с первой вкладки не вышли к проектам').toBe('/projects')
+  expect(new URL(page.url()).pathname, 'the first tab did not let go back to projects').toBe('/projects')
 })
 
 test('a swipe leaves alone what is not a swipe', async ({ page }, info) => {
@@ -49,18 +46,18 @@ test('a swipe leaves alone what is not a swipe', async ({ page }, info) => {
   await settled(page)
 
   await swipe(page, -140, { x: 10, y: 600 })
-  expect(page.url(), 'забрали полосу системного жеста').toContain('/projects')
+  expect(page.url(), 'it took the strip the system gesture owns').toContain('/projects')
 
   await swipe(page, -40)
-  expect(page.url(), 'уехали от короткого движения').toContain('/projects')
+  expect(page.url(), 'a short drag moved the page').toContain('/projects')
 
   const row = (await page.locator('header nav').boundingBox())!
   await swipe(page, -140, { x: row.x + row.width / 2, y: row.y + row.height / 2 })
-  expect(page.url(), 'свайп по шапке увёл со страницы').toContain('/projects')
+  expect(page.url(), 'a swipe along the header left the page').toContain('/projects')
 })
 
 test('the tabs travel back the way they came', async ({ page }) => {
-  test.skip(TABS.length < 3, 'нужны три вкладки')
+  test.skip(TABS.length < 3, 'needs three tabs')
 
   await page.goto('/favorite')
   await settled(page)
@@ -69,9 +66,9 @@ test('the tabs travel back the way they came', async ({ page }) => {
 
   await page.getByRole('button').nth(2).click()
   await page.waitForTimeout(150)
-  expect(await dir(), 'вперёд по вкладкам').toBe('1')
+  expect(await dir(), 'forward through the tabs').toBe('1')
 
   await page.getByRole('button').nth(0).click()
   await page.waitForTimeout(150)
-  expect(await dir(), 'назад по вкладкам едет как вперёд').toBe('-1')
+  expect(await dir(), 'back through the tabs travels like forward').toBe('-1')
 })

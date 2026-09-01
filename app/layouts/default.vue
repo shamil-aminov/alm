@@ -12,7 +12,8 @@ onBeforeUnmount(watchMotion())
 <template>
   <div class="arrive h-dvh relative overflow-hidden bg-black font-sans text-white"
        :class="{ 'in-place': inPlace, settled }" :style="{ '--dir': direction }"
-       @touchstart.passive="swipe.down" @touchend.passive="swipe.up" @touchcancel.passive="swipe.off">
+       @touchstart.passive="swipe.down" @touchmove.passive="swipe.move"
+       @touchend.passive="swipe.off" @touchcancel.passive="swipe.off">
     <SiteHeader />
 
     <div data-scroll="page" class="page dissolve h-full overflow-y-auto overscroll-none">
