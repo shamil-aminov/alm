@@ -28,7 +28,7 @@ export default {
   favorite: [
     { kind: 'film',  label: { ru: 'Фильмы', en: 'Films' }, ratio: '2/3' },
     { kind: 'music', label: { ru: 'Музыка', en: 'Music' }, ratio: '1/1' },
-    { kind: 'game',  label: { ru: 'Игры',   en: 'Games' }, ratio: '16/9' },
+    { kind: 'game',  label: { ru: 'Игры',   en: 'Games' }, ratio: '2/3' },
     { kind: 'book',  label: { ru: 'Книги',  en: 'Books' }, ratio: '2/3' },
   ],
 } satisfies Site

@@ -75,16 +75,21 @@ test('on a phone the header is one line and scrolls sideways', async ({ page }) 
   expect(language!.x + language!.width).toBeLessThanOrEqual(PHONE.width)
 })
 
-test('a wide cover gets more room than a narrow one', async ({ page }) => {
+test('a narrow cover fits two to a row on a phone, a wide one takes the row', async ({ page }) => {
   await page.setViewportSize(PHONE)
 
-  const widthOf = async (kind: string) => {
-    await page.goto(`/favorite?kind=${kind}`)
+  const perRow = async (to: string) => {
+    await page.goto(to)
     await settled(page)
-    return page.locator('main li').first().evaluate((el) => Math.round(el.getBoundingClientRect().width))
+    return page.locator('main li').first().evaluate((el) => {
+      const row = el.getBoundingClientRect()
+      const all = [...el.parentElement!.children]
+      return all.filter((one) => Math.abs(one.getBoundingClientRect().top - row.top) < 2).length
+    })
   }
 
-  expect(await widthOf('game')).toBeGreaterThan(await widthOf('film'))
+  expect(await perRow('/favorite?kind=film'), 'a 2:3 poster should pair up').toBe(2)
+  expect(await perRow('/projects'), 'a 16:9 cover should take the whole row').toBe(1)
 })
 
 test('the wheel turns to the section and leaves the tail of the one before', async ({ page }) => {
