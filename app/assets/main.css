@@ -12,7 +12,7 @@ html, body { background: #000; overscroll-behavior: none }
 .arrive { animation: arrive var(--appear) linear var(--swap) both }
 @media (prefers-reduced-motion: reduce) { .arrive { animation: none } }
 
-.big, .post h1    { font-size: clamp(40px, 6.4vw, 88px); line-height: .9;   font-weight: 700; letter-spacing: -.025em }
+.big, .post h1    { font-size: clamp(40px, 13cqw, 88px); line-height: .9;   font-weight: 700; letter-spacing: -.025em }
 .post h2          { font-size: clamp(24px, 2.6vw, 36px); line-height: 1.05; font-weight: 700; letter-spacing: -.02em }
 .small            { font-size: var(--small); line-height: 1.5;  font-weight: 400 }
 .fine             { font-size: clamp(13px, 1.05vw, 15px); line-height: 1.35; font-weight: 400 }
@@ -39,7 +39,7 @@ html, body { background: #000; overscroll-behavior: none }
 
 .headroom { padding-block-start: var(--headroom) }
 
-.column { inline-size: min(100%, max(28rem, 39vw)) }
+.column { inline-size: min(100%, max(28rem, 39vw)); container-type: inline-size }
 
 .page { --head: var(--row) }
 

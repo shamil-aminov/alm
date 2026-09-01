@@ -79,3 +79,22 @@ test('images are there, not addresses from a previous life', async ({ page }) =>
     expect(broken, to).toEqual([])
   }
 })
+
+test('a headline never outgrows the column it is set in', async ({ page }) => {
+  for (const width of [390, 700, 1100, 1440, 1700, 2560]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/blog')
+    await settled(page)
+
+    const fits = await page.locator('main h2').first().evaluate((el) => {
+      const range = document.createRange()
+      range.selectNodeContents(el)
+      const lines = [...range.getClientRects()]
+      const column = el.closest('.column')!.getBoundingClientRect().width
+      return { lines: lines.length, longest: Math.max(...lines.map((l) => l.width)), column }
+    })
+
+    expect(fits.longest, `${width}px: the line is wider than the column`).toBeLessThanOrEqual(fits.column)
+    expect(fits.lines, `${width}px: a two-word title broke onto two lines`).toBe(1)
+  }
+})
