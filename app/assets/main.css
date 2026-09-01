@@ -20,6 +20,10 @@ html, body { background: #000; overscroll-behavior: none }
 :root {
   --swap: 280ms;
   --appear: 220ms;
+
+  /* Кадр проявляется дольше страницы: он приходит один, посреди уже готового
+     разворота, и резкое появление читается вспышкой. */
+  --picture: 700ms;
 }
 
 :root {
@@ -162,7 +166,7 @@ html, body { background: #000; overscroll-behavior: none }
    вертушка и не полоска — иконок внутри страницы в проекте нет ни одной, а
    приёму «выйти из темноты» сайт уже обучен, и картинка приходит им же. */
 .cover { background: rgba(255, 255, 255, .05) }
-.cover img { transition: opacity var(--appear) linear }
+.cover img { transition: opacity var(--picture) ease-out }
 .cover img.waiting { opacity: 0; transition: none }
 @media (prefers-reduced-motion: reduce) { .cover img { transition: none } }
 

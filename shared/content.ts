@@ -18,7 +18,7 @@ export type Kind = {
 }
 
 export type Site = {
-  name: string
+  name: Localized
   tagline?: Localized
   url: string
   ogImage?: string

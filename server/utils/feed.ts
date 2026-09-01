@@ -28,7 +28,7 @@ export function feed(lang: string) {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel>
-  <title>${escape(site.name)}</title>
+  <title>${escape(say(site.name, lang))}</title>
   <link>${home}</link>
   <description>${escape(say(site.tagline, lang))}</description>
   <language>${lang}</language>
