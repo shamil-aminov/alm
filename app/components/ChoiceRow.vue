@@ -115,16 +115,20 @@ function showCurrent(smoothly = true) {
 
 let placed = 0
 
-function underDarkness() {
-  const page = el.value?.closest('.arrive')
-  return !!page && parseFloat(getComputedStyle(page).opacity) < 0.01
+function outOfSight() {
+  let seen = 1
+  for (let at = el.value; at; at = at.parentElement) {
+    seen *= parseFloat(getComputedStyle(at).opacity)
+    if (at.classList.contains('arrive')) break
+  }
+  return seen < 0.01
 }
 
 onBeforeUnmount(() => cancelAnimationFrame(chasing))
 onMounted(() => {
   if (el.value && wheel) {
     fitWheel(el.value)
-    if (underDarkness()) {
+    if (outOfSight()) {
       placeWheel(el.value)
       placed = el.value.scrollLeft
     } else {

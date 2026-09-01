@@ -45,6 +45,11 @@ The switch steps to the next language in the list and comes back round from the 
 skipping any language a post has not been translated into: no translation means no
 link.
 
+The build refuses content that would break quietly: a cover naming a file that is not
+in `public/`, a post in a language `site.ts` does not list, a date not written
+`YYYY-MM-DD`, a card of a kind with no tab. You hear about it at `npm run generate`,
+not from a visitor.
+
 A draft is an uncommitted file. There are no visibility flags: what is not in the
 build is not on the site.
 

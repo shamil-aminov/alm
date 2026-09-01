@@ -139,3 +139,31 @@ test('one row highlights, not both at once', async ({ page }) => {
   await page.locator('main .choices button', { hasText: 'музыка' }).hover()
   await expect.poll(lit).toEqual({ header: 0, tabs: 1 })
 })
+
+test('switching language does not rewind the wheel', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/favorite')
+  await settled(page)
+
+  const at = () => page.locator('header nav').evaluate((el) => Math.round(el.scrollLeft))
+  const before = await at()
+  expect(before, 'the wheel was not turned to begin with').toBeGreaterThan(20)
+
+  await page.evaluate(() => {
+    ;(window as unknown as { seen: number[] }).seen = []
+    const tick = () => {
+      const row = document.querySelector('header nav')
+      if (row) (window as unknown as { seen: number[] }).seen.push(Math.round(row.scrollLeft))
+      requestAnimationFrame(tick)
+    }
+    tick()
+  })
+
+  await page.locator('header a.language').click()
+  await settled(page)
+  await page.waitForTimeout(700)
+
+  const seen = await page.evaluate(() => (window as unknown as { seen: number[] }).seen)
+  const rewound = seen.filter((one) => one < before / 2).length
+  expect(rewound, 'the wheel went back to the start and turned again').toBeLessThan(3)
+})

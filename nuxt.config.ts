@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
 import type { ModuleOptions } from '@nuxtjs/i18n'
+import { check } from './build/check.ts'
 import { content } from './build/content.ts'
 import site from './content/site.ts'
 
@@ -17,7 +18,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/fonts', '@nuxtjs/i18n'],
   css: ['~/assets/main.css'],
-  vite: { plugins: [tailwindcss(), content()] },
+  vite: { plugins: [tailwindcss(), content(), check()] },
 
   app: {
     head: {

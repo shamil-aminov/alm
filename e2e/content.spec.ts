@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { checkContent } from '../shared/check.ts'
 import { byDate, nextLang, say } from '../shared/content.ts'
 import { parsePost } from '../shared/post.ts'
 
@@ -79,5 +80,45 @@ test.describe('order of posts', () => {
   test('a post without a date sinks to the bottom', () => {
     const posts = [{ date: undefined }, { date: '2026-01-01' }]
     expect(posts.sort(byDate)[0]!.date, 'a dateless post floated to the top').toBe('2026-01-01')
+  })
+})
+
+test.describe('what the build refuses to publish', () => {
+  const whole = {
+    languages: ['ru', 'en'],
+    kinds: ['film'],
+    present: (src: string) => src === '/demo.webp',
+    images: [{ where: 'favorite.ts', src: '/demo.webp' }],
+    posts: [{ file: 'a.ru.md', lang: 'ru', date: '2026-08-01' }],
+    cards: [{ where: 'favorite.ts', kind: 'film' }],
+  }
+
+  test('healthy content has nothing to say', () => {
+    expect(checkContent(whole)).toEqual([])
+  })
+
+  test('an image that is not there', () => {
+    const said = checkContent({ ...whole, images: [{ where: 'favorite.ts', src: '/gone.webp' }] })
+    expect(said.join(' ')).toContain('/gone.webp')
+  })
+
+  test('an address in a bucket is nobody business of ours', () => {
+    const far = [{ where: 'favorite.ts', src: 'https://bucket/cover.webp' }]
+    expect(checkContent({ ...whole, images: far }), 'a remote address was checked on disk').toEqual([])
+  })
+
+  test('a language the site does not have', () => {
+    const said = checkContent({ ...whole, posts: [{ file: 'a.de.md', lang: 'de' }] })
+    expect(said.join(' ')).toContain('never shown')
+  })
+
+  test('a date written the human way', () => {
+    const said = checkContent({ ...whole, posts: [{ file: 'a.ru.md', lang: 'ru', date: '01.08.2026' }] })
+    expect(said.join(' ')).toContain('YYYY-MM-DD')
+  })
+
+  test('a card of a kind that has no tab', () => {
+    const said = checkContent({ ...whole, cards: [{ where: 'favorite.ts', kind: 'movie' }] })
+    expect(said.join(' ')).toContain('no tab')
   })
 })

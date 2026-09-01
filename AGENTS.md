@@ -64,6 +64,12 @@ what is safe; dropping is a rule. Link schemes are checked in the same place.
 `failOnError`, so a broken link inside content fails the build instead of reaching
 the host.
 
+**So is `build/check.ts`.** Before anything is built it refuses content that would
+fail silently rather than loudly: a cover that names a file `public/` does not have,
+a post whose language is not in `site.ts` (it would simply never appear), a date not
+written `YYYY-MM-DD`, a card of a kind that has no tab. Addresses that point at a
+bucket are left alone — there is nothing on disk to check.
+
 **Layout is fluid, with no breakpoints.** Sizes and spacing are `clamp()` tokens in
 `app/assets/main.css`; grids use `repeat(auto-fill, minmax(...))`. There is not a
 single media query for width, and adding one is a step backwards.
