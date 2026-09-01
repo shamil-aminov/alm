@@ -60,22 +60,25 @@ test.describe('travel between sections', () => {
     await page.goto('/projects')
     await settled(page)
 
-    const top = () => page.evaluate(() => {
-      const li = document.querySelector('main li')
-      const box = li?.getBoundingClientRect()
-      return box?.height ? Math.round(box.top) : null
+    const leaving = (await page.locator('main li').first().elementHandle())!
+    const top = () => leaving.evaluate((el) => {
+      const box = el.getBoundingClientRect()
+      return box.height ? Math.round(box.top) : null
     })
 
     const before = await top()
     expect(before).not.toBeNull()
 
     await page.locator('header nav a[href="/favorite"]').click()
+    let seen = 0
     for (let i = 0; i < 5; i++) {
       await page.waitForTimeout(40)
       const now = await top()
       if (now === null) break
       expect(now).toBe(before)
+      seen++
     }
+    expect(seen, 'the page was already gone at the first look').toBeGreaterThan(0)
   })
 })
 
