@@ -158,6 +158,14 @@ html, body { background: #000; overscroll-behavior: none }
   .travel-leave-active :is(.staggered, .stagger > *) { transition: none }
 }
 
+/* Место кадра занято, пока кадр едет: тусклый прямоугольник той же формы. Не
+   вертушка и не полоска — иконок внутри страницы в проекте нет ни одной, а
+   приёму «выйти из темноты» сайт уже обучен, и картинка приходит им же. */
+.cover { background: rgba(255, 255, 255, .05) }
+.cover img { transition: opacity var(--appear) linear }
+.cover img.waiting { opacity: 0; transition: none }
+@media (prefers-reduced-motion: reduce) { .cover img { transition: none } }
+
 .optical { margin-inline: calc(var(--optical, .055em) * -1) }
 
 .fade-out {

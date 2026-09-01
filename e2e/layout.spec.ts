@@ -98,3 +98,27 @@ test('a headline never outgrows the column it is set in', async ({ page }) => {
     expect(fits.lines, `${width}px: a two-word title broke onto two lines`).toBe(1)
   }
 })
+
+test('a frame holds its place while the picture is still coming', async ({ page }) => {
+  let release: (() => void) | undefined
+  await page.route('**/*.webp', async (route) => {
+    await new Promise<void>((go) => { release = go })
+    await route.continue()
+  })
+
+  await page.goto('/projects')
+  await settled(page)
+
+  const frame = page.locator('main li .cover').first()
+  const ground = await frame.evaluate((el) => getComputedStyle(el).backgroundColor)
+  expect(ground, 'the empty frame is invisible on black').not.toBe('rgba(0, 0, 0, 0)')
+  expect(await frame.boundingBox().then((b) => Math.round(b!.height)),
+    'the frame has no height before the picture').toBeGreaterThan(50)
+
+  const cover = page.locator('main li img').first()
+  expect(await cover.evaluate((el) => getComputedStyle(el).opacity),
+    'the picture is shown before it has arrived').toBe('0')
+
+  release?.()
+  await expect.poll(() => cover.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+})
