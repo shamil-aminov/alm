@@ -1,32 +1,27 @@
 <script setup lang="ts">
-import { favorites, kinds, say, sectionName } from '~/utils/content'
+import { favorites, kinds, say, sectionName, tabs } from '~/utils/content'
 import { pageTransition } from '~~/shared/motion'
 
 const { lang, label } = usePageLang()
 
 const route = useRoute()
 const router = useRouter()
-const direction = useDirection()
 
 const cards = favorites
 
-const tabs = computed(() => kinds.filter((kind) => cards.some((card) => card.kind === kind.kind)))
-const firstTab = computed(() => tabs.value[0]?.kind ?? '')
+const firstTab = tabs[0]?.kind ?? ''
 
 const openTab = computed(() => {
   const asked = String(route.query.kind ?? '')
-  const known = tabs.value.some((tab) => tab.kind === asked)
-  return known ? asked : firstTab.value
+  const known = tabs.some((tab) => tab.kind === asked)
+  return known ? asked : firstTab
 })
 
 const shown = computed(() => cards.filter((card) => card.kind === openTab.value))
 const coverRatio = (kind: string) => kinds.find((k) => k.kind === kind)?.ratio ?? '1/1'
 
 function open(kind: string) {
-  const positionOf = (kind: string) => tabs.value.findIndex((tab) => tab.kind === kind)
-
-  direction.value = Math.sign(positionOf(kind) - positionOf(openTab.value)) || 1
-  router.push({ query: kind === firstTab.value ? {} : { kind } })
+  router.push({ query: kind === firstTab ? {} : { kind } })
 }
 
 usePageSeo(() => ({ title: sectionName('/favorite', lang) }))

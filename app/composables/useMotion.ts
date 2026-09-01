@@ -1,15 +1,17 @@
-import { sections } from '~/utils/content'
+import { stopAt } from '~/utils/content'
 
 export const useDirection = () => useState('direction', () => 1)
 
 export const useInPlace = () => useState('in-place', () => false)
 
-function locate(path: string) {
-  const bare = path.replace(/^\/en(?=\/|$)/, '') || '/'
+export const bare = (path: string) => path.replace(/^\/en(?=\/|$)/, '') || '/'
+
+function locate(route: { path: string, query: Record<string, unknown> }) {
+  const path = bare(route.path)
   return {
-    path: bare,
-    section: Math.max(0, sections.findIndex((s) => s.to !== '/' && bare.startsWith(s.to))),
-    depth: bare.split('/').filter(Boolean).length,
+    path,
+    stop: stopAt(path, String(route.query.kind ?? '')),
+    depth: path.split('/').filter(Boolean).length,
   }
 }
 
@@ -18,14 +20,14 @@ export function watchMotion() {
   const inPlace = useInPlace()
 
   return useRouter().beforeEach((to, from) => {
-    const was = locate(from.path)
-    const now = locate(to.path)
+    const was = locate(from)
+    const now = locate(to)
 
     inPlace.value = was.path === now.path && from.path !== to.path
 
-    direction.value = (now.section === was.section
+    direction.value = (now.stop === was.stop
       ? Math.sign(now.depth - was.depth)
-      : Math.sign(now.section - was.section)) || 1
+      : Math.sign(now.stop - was.stop)) || 1
 
     rememberScroll(from.fullPath, to.fullPath, inPlace.value)
   })
