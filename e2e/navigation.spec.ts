@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { SECTIONS, direction, go, settled, watchConsole } from './helpers'
+import { SECTIONS, TABS, direction, go, settled, watchConsole } from './helpers'
 
 test.describe('travel between sections', () => {
   test('it goes where the eye goes along the header', async ({ page }) => {
@@ -125,34 +125,37 @@ test.describe('pages are whole', () => {
   })
 
   test('a tab lives in the address: it can be shared and the back button undoes it', async ({ page }) => {
+    test.skip(TABS.length < 2, 'this site has one tab, so there is nothing to switch')
     await page.goto('/favorite')
     await settled(page)
 
-    await page.locator('main button', { hasText: 'музыка' }).click()
-    await expect(page).toHaveURL(/\?kind=music/)
-    await expect(page.locator('main li p').first()).toHaveText('Альбом 1')
+    const first = await page.locator('main li p').first().innerText()
+    await page.locator('main button').nth(1).click()
+    await expect(page).toHaveURL(new RegExp(`\\?kind=${TABS[1]!.kind}`))
+    await expect(page.locator('main li p').first()).not.toHaveText(first)
 
     await page.goBack()
     await expect(page).toHaveURL(/\/favorite$/)
-    await expect(page.locator('main li p').first()).toHaveText('Фильм 1')
+    await expect(page.locator('main li p').first()).toHaveText(first)
 
-    await page.goto('/favorite?kind=book')
+    await page.goto(`/favorite?kind=${TABS.at(-1)!.kind}`)
     await settled(page)
-    await expect(page.locator('main li p').first()).toHaveText('Книга 1')
+    await expect(page.locator('main button').last()).toHaveClass(/current/)
   })
 
   test('a tab switches the content, not just the highlight', async ({ page }) => {
+    test.skip(TABS.length < 2, 'this site has one tab, so there is nothing to switch')
     const bad = watchConsole(page)
     await page.goto('/favorite')
     await settled(page)
 
     const cards = page.locator('main li')
-    await expect(cards.first().locator('p').first()).toHaveText('Фильм 1')
+    const first = await cards.first().locator('p').first().innerText()
 
-    await page.locator('main button', { hasText: 'музыка' }).click()
-    await expect(page.locator('main button', { hasText: 'музыка' })).toHaveClass(/current/)
-    await expect(cards.first().locator('p').first()).toHaveText('Альбом 1')
-    await expect(cards).toHaveCount(8)
+    await page.locator('main button').nth(1).click()
+    await expect(page.locator('main button').nth(1)).toHaveClass(/current/)
+    await expect(cards.first().locator('p').first()).not.toHaveText(first)
+    await expect(cards.first()).toBeVisible()
     expect(bad).toEqual([])
   })
 
@@ -162,8 +165,7 @@ test.describe('pages are whole', () => {
     await settled(page)
 
     const tabs = page.locator('main button')
-    await tabs.nth(1).click()
-    await tabs.nth(2).click()
+    for (let at = 1; at < Math.min(3, TABS.length); at++) await tabs.nth(at).click()
     await tabs.nth(0).click()
 
     await go(page, '/projects')

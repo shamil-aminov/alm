@@ -23,12 +23,12 @@ usePageSeo(() => ({ title: sectionName('/projects', lang) }))
         </NuxtLink>
         <Cover v-else :src="card.cover" :alt="say(card.title, lang)" ratio="16/9" />
 
-        <p class="small optical mt-2">
+        <p class="fine optical mt-2">
           <NuxtLink v-if="card.story" :to="card.story"
                     class="underline-offset-4 hover:underline">{{ say(card.title, lang) }}</NuxtLink>
           <span v-else>{{ say(card.title, lang) }}</span>
         </p>
-        <p v-if="card.github" class="small optical opacity-60">
+        <p v-if="card.github" class="fine optical opacity-60">
           <a :href="card.github" target="_blank" rel="noreferrer"
              class="underline-offset-4 hover:underline">github</a>
         </p>

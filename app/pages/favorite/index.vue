@@ -51,8 +51,8 @@ usePageSeo(() => ({ title: sectionName('/favorite', lang) }))
           :style="{ '--shape': coverRatio(openTab), '--card-min': 'clamp(9rem, 33vw, 14rem)', '--card-share': '24%' }">
         <li v-for="card in shown" :key="say(card.title, 'ru')" class="staggered">
           <Cover :src="card.cover" :alt="say(card.title, lang)" :ratio="coverRatio(card.kind)" />
-          <p class="small optical mt-2">{{ say(card.title, lang) }}</p>
-          <p v-if="card.author || card.year" class="small optical opacity-60">
+          <p class="fine optical mt-2">{{ say(card.title, lang) }}</p>
+          <p v-if="card.author || card.year" class="fine optical opacity-60">
             {{ [say(card.author, lang), card.year].filter(Boolean).join(', ') }}
           </p>
         </li>

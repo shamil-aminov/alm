@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { SECTIONS, settled } from './helpers'
+import { SECTIONS, SITE, settled } from './helpers'
 
 const head = (page: import('@playwright/test').Page, selector: string) =>
   page.locator(selector).evaluateAll((els) => els.map((el) => el.getAttribute('href') ?? ''))
@@ -13,19 +13,19 @@ test('a page declares its language and its canonical address', async ({ page }) 
     expect(lang, to).toMatch(to.startsWith('/en') ? /^en/ : /^ru/)
 
     const [canonical] = await head(page, 'link[rel="canonical"]')
-    expect(canonical, to).toBe(`https://example.com${to === '/' ? '' : to}`)
+    expect(canonical, to).toBe(`${SITE.url}${to === '/' ? '' : to}`)
   }
 })
 
 test('hreflang promises only the versions that exist', async ({ page }) => {
   await page.goto('/blog/example')
   await settled(page)
-  expect(await head(page, 'link[hreflang="en"]')).toEqual(['https://example.com/en/blog/example'])
+  expect(await head(page, 'link[hreflang="en"]')).toEqual([`${SITE.url}/en/blog/example`])
 
   await page.goto('/blog/project-4')
   await settled(page)
   expect(await head(page, 'link[hreflang="en"]')).toEqual([])
-  expect(await head(page, 'link[hreflang="ru"]')).toEqual(['https://example.com/blog/project-4'])
+  expect(await head(page, 'link[hreflang="ru"]')).toEqual([`${SITE.url}/blog/project-4`])
 })
 
 test('an unknown address gets our page, not a blank default', async ({ page }) => {
@@ -68,12 +68,12 @@ test('the sitemap lists sections and posts, and only the ones that exist', async
   const xml = await (await request.get('/sitemap.xml')).text()
   const loc = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]!)
 
-  for (const to of SECTIONS) expect(loc, to).toContain(`https://example.com${to === '/' ? '/' : to}`)
-  expect(loc).toContain('https://example.com/en/blog/example')
-  expect(loc).not.toContain('https://example.com/en/blog/project-4')
+  for (const to of SECTIONS) expect(loc, to).toContain(`${SITE.url}${to === '/' ? '/' : to}`)
+  expect(loc).toContain(`${SITE.url}/en/blog/example`)
+  expect(loc).not.toContain(`${SITE.url}/en/blog/project-4`)
 
   const robots = await (await request.get('/robots.txt')).text()
-  expect(robots).toContain('Sitemap: https://example.com/sitemap.xml')
+  expect(robots).toContain(`Sitemap: ${SITE.url}/sitemap.xml`)
 })
 
 test('the share image is an absolute address', async ({ page }) => {

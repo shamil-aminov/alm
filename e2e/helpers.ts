@@ -1,6 +1,14 @@
 import { expect, type Page } from '@playwright/test'
+import favorites from '../content/favorite.ts'
+import site from '../content/site.ts'
 
 export const SECTIONS = ['/', '/blog', '/projects', '/favorite'] as const
+
+export const SITE = site
+
+// Вкладки берутся из содержимого, а не из демо: у настоящего сайта их может быть одна,
+// и тогда проверять переключение нечего.
+export const TABS = site.favorite.filter((kind) => favorites.some((card) => card.kind === kind.kind))
 
 export const direction = (page: Page) =>
   page.locator('[style*="--dir"]').evaluate((el) =>

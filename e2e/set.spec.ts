@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import site from '../content/site.ts'
 import { say } from '../shared/content.ts'
-import { settled } from './helpers'
+import { TABS, settled } from './helpers'
 
 const size = (page: import('@playwright/test').Page, text: string) =>
   page.locator('header nav a', { hasText: text }).evaluate((el) => parseFloat(getComputedStyle(el).fontSize))
@@ -125,6 +125,7 @@ test('a finger can hit a tab, not only a cursor', async ({ page }) => {
 })
 
 test('one row highlights, not both at once', async ({ page }) => {
+  test.skip(!TABS.length, 'this site has no tabs to highlight')
   await page.goto('/favorite')
   await settled(page)
 
@@ -136,7 +137,7 @@ test('one row highlights, not both at once', async ({ page }) => {
   await page.locator('header nav a', { hasText: 'блог' }).hover()
   await expect.poll(lit).toEqual({ header: 1, tabs: 0 })
 
-  await page.locator('main .choices button', { hasText: 'музыка' }).hover()
+  await page.locator('main .choices button').last().hover()
   await expect.poll(lit).toEqual({ header: 0, tabs: 1 })
 })
 
