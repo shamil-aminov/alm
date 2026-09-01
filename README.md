@@ -64,7 +64,9 @@ Type sizes, spacing and the two colors live in `app/assets/main.css`; the typefa
 ## Hosting
 
 Any static host. `npm run generate` writes the finished files into `.output/public`
-— from there Vercel, Netlify, Pages, whatever you like.
+— from there Netlify, Pages, whatever you like. Vercel needs no settings: the
+`vercel.json` here points it at `generate`, and Nitro hands it 23 static pages and no
+functions at all.
 
 ## Where things are
 

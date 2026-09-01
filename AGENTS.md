@@ -31,8 +31,11 @@ Node 22.19+, 24.11+ or 26+ — the range Nuxt itself requires, and what
 3. **Replace `content/`** — posts, projects, favorites. The demo content is
    deliberately anonymous ("Project 3", "Film 7") so it reads as a placeholder rather
    than as somebody's material.
-4. **Deploy** — any static host. Vercel detects Nuxt on its own; otherwise run
-   `npm run generate` and serve `.output/public`.
+4. **Deploy** — any static host: `npm run generate` writes finished files into
+   `.output/public`. On Vercel the build command has to be `npm run generate`, which
+   `vercel.json` pins: left to its own detection Vercel runs `nuxt build`, and Nitro
+   then emits serverless functions for every route instead of static pages — a working
+   site, but not the one this project is.
 
 ## How it is built
 
