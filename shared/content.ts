@@ -31,7 +31,6 @@ export type Favorite = {
   kind: string
   title?: Localized
   author?: Localized
-  year?: number
   cover?: string
 }
 

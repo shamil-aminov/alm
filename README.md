@@ -21,7 +21,7 @@ Everything is edited as files under `content/`:
 site.ts            all the setup: name, address, languages, sections, kinds of favorites
 home.en.md         the poster; one file per language
 blog/*.en.md       posts; the file name is the address, one for every language
-favorite.ts        cards: kind, title, author, year, cover
+favorite.ts        cards: kind, title, author, cover
 projects.ts        projects: title, cover, github, address of the post behind it
 ```
 
