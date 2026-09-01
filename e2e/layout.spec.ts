@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { SECTIONS, box, settled } from './helpers'
+import { SECTIONS, TRANSLATED, box, settled } from './helpers'
 
 test('the gap between frames is one number everywhere and clearly thinner than the margin', async ({ page }) => {
   const seen = new Set<string>()
@@ -65,7 +65,7 @@ test('on a tabbed page the showcase scrolls, not the column', async ({ page }) =
 })
 
 test('images are there, not addresses from a previous life', async ({ page }) => {
-  for (const to of [...SECTIONS, '/blog/example', '/en/blog/example']) {
+  for (const to of [...SECTIONS, ...(TRANSLATED ? [`/blog/${TRANSLATED}`, `/en/blog/${TRANSLATED}`] : [])]) {
     await page.goto(to)
     await settled(page)
 

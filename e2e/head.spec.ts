@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test'
-import { SECTIONS, SITE, settled } from './helpers'
+import { ALONE, SECTIONS, SITE, TRANSLATED, settled } from './helpers'
 
 const head = (page: import('@playwright/test').Page, selector: string) =>
   page.locator(selector).evaluateAll((els) => els.map((el) => el.getAttribute('href') ?? ''))
 
 test('a page declares its language and its canonical address', async ({ page }) => {
-  for (const to of [...SECTIONS, '/en', '/blog/example']) {
+  for (const to of [...SECTIONS, '/en', ...(TRANSLATED ? [`/blog/${TRANSLATED}`] : [])]) {
     await page.goto(to)
     await settled(page)
 
@@ -18,14 +18,17 @@ test('a page declares its language and its canonical address', async ({ page }) 
 })
 
 test('hreflang promises only the versions that exist', async ({ page }) => {
-  await page.goto('/blog/example')
-  await settled(page)
-  expect(await head(page, 'link[hreflang="en"]')).toEqual([`${SITE.url}/en/blog/example`])
+  test.skip(!TRANSLATED, 'nothing here is written in every language')
 
-  await page.goto('/blog/project-4')
+  await page.goto(`/blog/${TRANSLATED}`)
+  await settled(page)
+  expect(await head(page, 'link[hreflang="en"]')).toEqual([`${SITE.url}/en/blog/${TRANSLATED}`])
+
+  test.skip(!ALONE, 'everything here is translated, so there is no promise to withhold')
+  await page.goto(`/blog/${ALONE}`)
   await settled(page)
   expect(await head(page, 'link[hreflang="en"]')).toEqual([])
-  expect(await head(page, 'link[hreflang="ru"]')).toEqual([`${SITE.url}/blog/project-4`])
+  expect(await head(page, 'link[hreflang="ru"]')).toEqual([`${SITE.url}/blog/${ALONE}`])
 })
 
 test('an unknown address gets our page, not a blank default', async ({ page }) => {
@@ -59,7 +62,8 @@ test('language still switches on a post that does not exist', async ({ page }) =
   await expect(page.locator('main h1')).toHaveText('404')
   await expect(page.locator('header a[href="/en/blog/nope"]')).toBeVisible()
 
-  await page.goto('/blog/project-4')
+  test.skip(!ALONE, 'everything here is translated, so the switch never hides')
+  await page.goto(`/blog/${ALONE}`)
   await settled(page)
   expect(await page.locator('header a[href^="/en"]').count()).toBe(0)
 })
@@ -69,15 +73,15 @@ test('the sitemap lists sections and posts, and only the ones that exist', async
   const loc = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]!)
 
   for (const to of SECTIONS) expect(loc, to).toContain(`${SITE.url}${to === '/' ? '/' : to}`)
-  expect(loc).toContain(`${SITE.url}/en/blog/example`)
-  expect(loc).not.toContain(`${SITE.url}/en/blog/project-4`)
+  if (TRANSLATED) expect(loc).toContain(`${SITE.url}/en/blog/${TRANSLATED}`)
+  if (ALONE) expect(loc).not.toContain(`${SITE.url}/en/blog/${ALONE}`)
 
   const robots = await (await request.get('/robots.txt')).text()
   expect(robots).toContain(`Sitemap: ${SITE.url}/sitemap.xml`)
 })
 
 test('the share image is an absolute address', async ({ page }) => {
-  for (const to of ['/', '/blog/example']) {
+  for (const to of ['/', ...(TRANSLATED ? [`/blog/${TRANSLATED}`] : [])]) {
     await page.goto(to)
     const image = page.locator('meta[property="og:image"]')
     await expect(image, to).toHaveAttribute('content', /^https?:\/\//)
