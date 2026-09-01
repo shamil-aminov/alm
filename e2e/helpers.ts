@@ -1,11 +1,14 @@
 import { readdirSync } from 'node:fs'
 import { expect, type Page } from '@playwright/test'
 import favorites from '../content/favorite.ts'
+import projects from '../content/projects.ts'
 import site from '../content/site.ts'
 
 export const SECTIONS = ['/', '/blog', '/projects', '/favorite'] as const
 
 export const SITE = site
+
+export const PROJECTS = projects.length
 
 // Вкладки берутся из содержимого, а не из демо: у настоящего сайта их может быть одна,
 // и тогда проверять переключение нечего.

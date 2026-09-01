@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { SECTIONS, TABS, direction, go, settled, watchConsole } from './helpers'
+import { PROJECTS, SECTIONS, TABS, direction, go, settled, watchConsole } from './helpers'
 
 test.describe('travel between sections', () => {
   test('it goes where the eye goes along the header', async ({ page }) => {
@@ -169,7 +169,7 @@ test.describe('pages are whole', () => {
     await tabs.nth(0).click()
 
     await go(page, '/projects')
-    await expect(page.locator('main li')).toHaveCount(8)
+    await expect(page.locator('main li')).toHaveCount(PROJECTS)
     expect(bad).toEqual([])
   })
 })
