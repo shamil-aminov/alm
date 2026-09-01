@@ -10,13 +10,8 @@ export const SITE = site
 
 export const PROJECTS = projects.length
 
-// Вкладки берутся из содержимого, а не из демо: у настоящего сайта их может быть одна,
-// и тогда проверять переключение нечего.
 export const TABS = site.favorite.filter((kind) => favorites.some((card) => card.kind === kind.kind))
 
-// Какие записи есть и на скольких языках — читается из самих файлов, потому что
-// проверять «нет перевода — нет ссылки» можно только на записи, которой правда нет
-// на втором языке. У чужого содержимого такой может не оказаться вовсе.
 const written = new Map<string, string[]>()
 for (const file of readdirSync(new URL('../content/blog', import.meta.url))) {
   const name = file.replace(/\.md$/, '')
@@ -28,10 +23,8 @@ for (const file of readdirSync(new URL('../content/blog', import.meta.url))) {
 
 const first = site.languages[0]!.code
 
-/** Запись, переведённая на все языки сайта. */
 export const TRANSLATED = [...written].find(([, langs]) => langs.length === site.languages.length)?.[0]
 
-/** Запись, которая есть только на первом языке. */
 export const ALONE = [...written].find(([, langs]) => langs.length === 1 && langs[0] === first)?.[0]
 
 export const direction = (page: Page) =>

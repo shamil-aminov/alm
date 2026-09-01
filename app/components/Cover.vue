@@ -4,9 +4,6 @@ defineProps<{ src?: string, alt: string, ratio: string }>()
 const img = useTemplateRef<HTMLImageElement>('img')
 const waiting = ref(false)
 
-// Ожидание включается только после оживления и только если картинка ещё не пришла:
-// на сервере снимок отдаётся видимым, поэтому без JS ничего не пропадает, а
-// пришедшая из кэша не моргает.
 onMounted(() => { waiting.value = !!img.value && !img.value.complete })
 </script>
 
