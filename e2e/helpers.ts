@@ -4,7 +4,7 @@ import favorites from '../content/favorite.ts'
 import projects from '../content/projects.ts'
 import site from '../content/site.ts'
 
-export const SECTIONS = ['/', '/blog', '/projects', '/favorite'] as const
+export const SECTIONS = site.sections.map((section) => section.to)
 
 export const SITE = site
 

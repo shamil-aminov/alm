@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { CARDS, holdTheReveal, holdTheScripts, hydrated, inSecond, PROJECTS, SECOND, SECTIONS, settled, stretchTheReveal } from './helpers'
+import { CARDS, holdTheReveal, holdTheScripts, hydrated, inSecond, PROJECTS, SECOND, SECTIONS, settled, stretchTheReveal, TABS } from './helpers'
 
 const PHONE = { width: 390, height: 844 }
 const DESKTOP = { width: 1440, height: 900 }
@@ -80,6 +80,9 @@ test('on a phone the header is one line and scrolls sideways', async ({ page }) 
 test('a narrow cover fits two to a row on a phone, a wide one takes the row', async ({ page }) => {
   test.skip(!CARDS || !PROJECTS, 'this site has no cards to lay out')
 
+  const poster = TABS.find((tab) => tab.ratio === '2/3')
+  test.skip(!poster, 'nothing here is shown on a 2:3 cover')
+
   await page.setViewportSize(PHONE)
 
   const perRow = async (to: string) => {
@@ -92,7 +95,7 @@ test('a narrow cover fits two to a row on a phone, a wide one takes the row', as
     })
   }
 
-  expect(await perRow('/favorite?kind=film'), 'a 2:3 poster should pair up').toBe(2)
+  expect(await perRow(`/favorite?kind=${poster!.kind}`), 'a 2:3 poster should pair up').toBe(2)
   expect(await perRow('/projects'), 'a 16:9 cover should take the whole row').toBe(1)
 })
 
@@ -258,7 +261,7 @@ test('showcase rows do not stretch to the height of the window', async ({ page }
   test.skip(!CARDS, 'this site has nothing in favorites yet')
 
   await page.setViewportSize(DESKTOP)
-  await page.goto('/favorite?kind=game')
+  await page.goto('/favorite')
   await settled(page)
 
   const { gap, rows } = await page.locator('main ul').evaluate((el) => {

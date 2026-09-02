@@ -47,7 +47,7 @@ function plainText(tokens: Token[]) {
   const words: string[] = []
 
   markdown.walkTokens(tokens, (token) => {
-    if (token.type === 'text' || token.type === 'codespan') words.push(token.raw)
+    if (token.type === 'codespan' || (token.type === 'text' && !token.tokens)) words.push(token.text)
   })
 
   return words.join(' ').replace(/\s+/g, ' ').trim()
@@ -66,7 +66,7 @@ export function page(fileName: string, text: string): Page {
   const tokens = markdown.lexer(post.body)
 
   const [opening] = tokens
-  const heading = !post.title && opening?.type === 'heading' ? opening as Tokens.Heading : undefined
+  const heading = opening?.type === 'heading' ? opening : undefined
   const rest = heading ? tokens.slice(1) : tokens
 
   return {

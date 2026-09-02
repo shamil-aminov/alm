@@ -11,6 +11,22 @@ test('a post whose title is its first heading says it once', () => {
 
   const titled = build('b.ru.md', '---\ntitle: Имя\ndate: 2026-08-01\n---\n\nТекст\n')
   expect(titled.opensWithTitle, 'a frontmatter title is not in the body').toBe(false)
+
+  const both = build('c.ru.md', '---\ntitle: Из шапки\n---\n\n# Из текста\n\nТело\n')
+  expect(both.title, 'the head takes the title from the frontmatter').toBe('Из шапки')
+  expect(both.opensWithTitle, 'the page would print a second first-level heading').toBe(true)
+  expect(both.excerpt, 'the heading leaked into the excerpt').toBe('Тело')
+})
+
+test('an excerpt says every word once and without its markup', () => {
+  const list = build('d.ru.md', '---\ntitle: T\n---\n\n- Один\n- Два\n\nХвост\n')
+  expect(list.excerpt, 'a list item was counted twice').toBe('Один Два Хвост')
+
+  const code = build('e.ru.md', '---\ntitle: T\n---\n\nТут `код` внутри\n')
+  expect(code.excerpt, 'the backticks came along').toBe('Тут код внутри')
+
+  const rich = build('f.ru.md', '---\ntitle: T\n---\n\nОбычный **жирный** и [ссылка](/a) тут\n')
+  expect(rich.excerpt).toBe('Обычный жирный и ссылка тут')
 })
 
 test('images are found wherever markdown puts them', () => {

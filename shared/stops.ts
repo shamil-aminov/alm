@@ -17,7 +17,7 @@ export function withoutLang(path: string, langs: string[]) {
 
 export const bare = (path: string) => withoutLang(path, prefixes)
 
-const under = (path: string, to: string) => path === to || path.startsWith(to + '/')
+export const under = (path: string, to: string) => path === to || path.startsWith(to + '/')
 
 export function stopAt(path: string, kind: string) {
   const exact = stops.findIndex((stop) => stop.to !== '/' && under(path, stop.to) && stop.kind === kind)

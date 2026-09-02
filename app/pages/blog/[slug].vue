@@ -27,7 +27,7 @@ usePageSeo(() => ({ title: article.value?.title, summary: article.value?.excerpt
       <div class="post small mt-8" v-html="article.html" />
 
       <p v-if="article.date" class="small mt-16">
-        {{ new Date(article.date).toLocaleDateString(lang) }}
+        {{ new Date(`${article.date}T00:00`).toLocaleDateString(lang) }}
       </p>
     </article>
   </main>

@@ -31,7 +31,7 @@ test('hreflang promises only the versions that exist', async ({ page }) => {
   await page.goto(`/blog/${ALONE}`)
   await settled(page)
   expect(await head(page, `link[hreflang="${SECOND}"]`)).toEqual([])
-  expect(await head(page, 'link[hreflang="ru"]')).toEqual([`${SITE.url}/blog/${ALONE}`])
+  expect(await head(page, `link[hreflang="${FIRST}"]`)).toEqual([`${SITE.url}/blog/${ALONE}`])
 })
 
 test('an unknown address gets our page, not a blank default', async ({ page }) => {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextLang } from '~~/shared/content'
+import { under } from '~~/shared/stops'
 import { languages, post, say, sections } from '~/utils/content'
 
 const { locale } = useI18n()
@@ -11,7 +12,7 @@ type Code = Parameters<typeof switchLocalePath>[0]
 
 function isCurrent(to: string) {
   const path = localePath(to)
-  return to === '/' ? route.path === path : route.path.startsWith(path)
+  return to === '/' ? route.path === path : under(route.path, path)
 }
 
 const otherLanguage = computed(() => {
