@@ -72,3 +72,17 @@ test('the tabs travel back the way they came', async ({ page }) => {
   await page.waitForTimeout(150)
   expect(await dir(), 'back through the tabs travels like forward').toBe('-1')
 })
+
+test('a swipe lands while the page is still arriving', async ({ page }, info) => {
+  onlyChromium(info.project.name)
+
+  await page.setViewportSize(PHONE)
+  await page.goto('/blog')
+  await settled(page)
+
+  await page.locator('header nav a[href="/projects"]').click()
+  await page.waitForTimeout(500)
+
+  await swipe(page, -140)
+  expect(new URL(page.url()).pathname, 'a swipe during the arrival was eaten').toBe('/favorite')
+})

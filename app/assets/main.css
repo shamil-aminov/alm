@@ -159,6 +159,8 @@ html, body { background: #000; overscroll-behavior: none }
   .travel-leave-active :is(.staggered, .stagger > *) { transition: none }
 }
 
+[data-scroll] { overflow-x: clip }
+
 .cover { background: rgba(255, 255, 255, .05) }
 .cover img { transition: opacity var(--picture) ease-out }
 .cover img.waiting { opacity: 0; transition: none }
