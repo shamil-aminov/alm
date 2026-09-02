@@ -72,10 +72,18 @@ export const holdTheScripts = (page: Page, ms: number) =>
     await route.continue()
   })
 
+export const wheelStill = (page: Page) =>
+  expect.poll(() => page.locator('header nav').evaluate((row) =>
+    new Promise<boolean>((tell) => {
+      const was = row.scrollLeft
+      requestAnimationFrame(() => requestAnimationFrame(() => tell(row.scrollLeft === was)))
+    })), { message: 'the wheel never came to rest', timeout: 5_000 }).toBe(true)
+
 export async function settled(page: Page) {
   await hydrated(page)
   await expect(page.locator('main')).toHaveCount(1)
   await expect(page.locator('.travel-enter-active, .travel-leave-active')).toHaveCount(0)
+  await wheelStill(page)
 }
 
 export async function go(page: Page, to: string) {
