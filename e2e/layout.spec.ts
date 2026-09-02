@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { CARDS, POSTS, SECOND, SECTIONS, TABS, TRANSLATED, box, inSecond, settled } from './helpers'
+import { CARDS, POSTS, PROJECTS, SECOND, SECTIONS, TABS, TRANSLATED, box, inSecond, settled } from './helpers'
 
 test('the gap between frames is one number everywhere and clearly thinner than the margin', async ({ page }) => {
   const seen = new Set<string>()
@@ -106,15 +106,15 @@ test('a headline never outgrows the column it is set in', async ({ page }) => {
 })
 
 test('a frame holds its place while the picture is still coming', async ({ page }) => {
-  test.skip(!CARDS, 'this site has nothing in favorites yet')
+  test.skip(!PROJECTS, 'this site has no projects yet')
 
-  let release: (() => void) | undefined
+  const held: (() => void)[] = []
   await page.route('**/*.webp', async (route) => {
-    await new Promise<void>((go) => { release = go })
+    await new Promise<void>((go) => held.push(go))
     await route.continue()
   })
 
-  await page.goto('/projects')
+  await page.goto('/projects', { waitUntil: 'domcontentloaded' })
   await settled(page)
 
   const frame = page.locator('main li .cover').first()
@@ -127,6 +127,6 @@ test('a frame holds its place while the picture is still coming', async ({ page 
   expect(await cover.evaluate((el) => getComputedStyle(el).opacity),
     'the picture is shown before it has arrived').toBe('0')
 
-  release?.()
+  for (const go of held) go()
   await expect.poll(() => cover.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
 })
