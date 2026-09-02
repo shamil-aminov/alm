@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
-import { PROJECTS, SECTIONS, TABS, direction, go, settled, watchConsole } from './helpers'
+import { say } from '../shared/content.ts'
+import { FIRST, PROJECTS, SECOND, SECTIONS, TABS, direction, go, settled, watchConsole } from './helpers'
 
 test.describe('travel between sections', () => {
   test('it goes where the eye goes along the header', async ({ page }) => {
@@ -33,15 +34,15 @@ test.describe('travel between sections', () => {
     await settled(page)
 
     const tab = page.locator('main button').first()
-    await expect(tab).toHaveText('Фильмы')
+    await expect(tab).toHaveText(say(TABS[0]!.label, FIRST))
 
     await page.locator('header a[href^="/en"]').click()
 
     await page.waitForTimeout(80)
-    await expect(tab).toHaveText('Фильмы')
+    await expect(tab).toHaveText(say(TABS[0]!.label, FIRST))
 
     await settled(page)
-    await expect(page.locator('main button').first()).toHaveText('Films')
+    await expect(page.locator('main button').first()).toHaveText(say(TABS[0]!.label, SECOND!))
   })
 
   test('switching language does not move the page: it is the same page', async ({ page }) => {

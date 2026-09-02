@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { expect, type Page } from '@playwright/test'
 import favorites from '../content/favorite.ts'
 import projects from '../content/projects.ts'
@@ -9,6 +9,15 @@ export const SECTIONS = ['/', '/blog', '/projects', '/favorite'] as const
 export const SITE = site
 
 export const PROJECTS = projects.length
+
+export const LISTED = site.sections.filter((section) => section.to !== '/')
+
+export const lost = (lang: string) => JSON.parse(
+  readFileSync(new URL(`../i18n/locales/${lang}.json`, import.meta.url), 'utf8'),
+).lost as string
+
+export const FIRST = site.languages[0]!.code
+export const SECOND = site.languages[1]?.code
 
 export const TABS = site.favorite.filter((kind) => favorites.some((card) => card.kind === kind.kind))
 
@@ -40,6 +49,13 @@ export const stretchTheReveal = (page: Page) =>
     const answer = await route.fetch()
     const slower = (await answer.text()).replace('--appear:.22s', '--appear:2s')
     await route.fulfill({ response: answer, body: slower })
+  })
+
+export const holdTheReveal = (page: Page) =>
+  page.route('**/*.css', async (route) => {
+    const answer = await route.fetch()
+    const later = (await answer.text()).replace('--swap:.28s', '--swap:3s')
+    await route.fulfill({ response: answer, body: later })
   })
 
 export const holdTheScripts = (page: Page, ms: number) =>

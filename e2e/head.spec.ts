@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { ALONE, SECTIONS, SITE, TRANSLATED, settled } from './helpers'
+import { ALONE, FIRST, SECOND, SECTIONS, SITE, TRANSLATED, lost, settled } from './helpers'
 
 const head = (page: import('@playwright/test').Page, selector: string) =>
   page.locator(selector).evaluateAll((els) => els.map((el) => el.getAttribute('href') ?? ''))
@@ -36,7 +36,7 @@ test('an unknown address gets our page, not a blank default', async ({ page }) =
   await settled(page)
 
   await expect(page.locator('main h1')).toHaveText('404')
-  await expect(page.locator('main p')).toHaveText('Такой страницы нет')
+  await expect(page.locator('main p')).toHaveText(lost(FIRST))
   expect(await page.locator('main a').count()).toBe(0)
 })
 
@@ -46,7 +46,7 @@ test('404 is a page, not a dead end: it travels and it switches language', async
 
   await page.locator('header a[href="/en/nope"]').click()
   await settled(page)
-  await expect(page.locator('main p')).toHaveText('No such page')
+  await expect(page.locator('main p')).toHaveText(lost(SECOND!))
 
   await page.locator('header nav a[href="/en"]').click()
   await page.waitForTimeout(100)

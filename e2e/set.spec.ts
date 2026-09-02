@@ -1,17 +1,23 @@
 import { expect, test } from '@playwright/test'
 import site from '../content/site.ts'
 import { say } from '../shared/content.ts'
-import { TABS, settled } from './helpers'
+import { FIRST, LISTED, TABS, settled } from './helpers'
 
-const size = (page: import('@playwright/test').Page, text: string) =>
-  page.locator('header nav a', { hasText: text }).evaluate((el) => parseFloat(getComputedStyle(el).fontSize))
+const [EARLIER, LATER] = LISTED
+const link = (page: import('@playwright/test').Page, to: string) =>
+  page.locator(`header nav a[href="${to}"]`)
+
+const size = (page: import('@playwright/test').Page, to: string) =>
+  link(page, to).evaluate((el) => parseFloat(getComputedStyle(el).fontSize))
+
+test.skip(LISTED.length < 2, 'this site has fewer than two sections to compare')
 
 test('exactly one item in a row is large, and it is the current section', async ({ page }) => {
-  await page.goto('/projects')
+  await page.goto(LATER!.to)
   await settled(page)
 
-  const active = await size(page, 'проекты')
-  const other = await size(page, 'блог')
+  const active = await size(page, LATER!.to)
+  const other = await size(page, EARLIER!.to)
   expect(active).toBeGreaterThan(other)
 
   const sizes = await page.locator('header nav a').evaluateAll((els) =>
@@ -20,7 +26,7 @@ test('exactly one item in a row is large, and it is the current section', async 
 })
 
 test('hover moves the type size and the row does not jump', async ({ page }) => {
-  await page.goto('/projects')
+  await page.goto(LATER!.to)
   await settled(page)
 
   const nav = page.locator('header nav')
@@ -29,25 +35,24 @@ test('hover moves the type size and the row does not jump', async ({ page }) => 
 
   const bigger = async (a: string, b: string) => await size(page, a) > await size(page, b)
 
-  const blog = page.locator('header nav a', { hasText: 'блог' })
-  await blog.hover()
-  await expect.poll(() => bigger('блог', 'проекты')).toBe(true)
+  await link(page, EARLIER!.to).hover()
+  await expect.poll(() => bigger(EARLIER!.to, LATER!.to)).toBe(true)
   expect(await rowHeight()).toBe(before)
 
   await page.mouse.move(0, 400)
-  await expect.poll(() => bigger('проекты', 'блог')).toBe(true)
+  await expect.poll(() => bigger(LATER!.to, EARLIER!.to)).toBe(true)
   expect(await rowHeight()).toBe(before)
 })
 
 test('the highlight does not drop in the gap between words', async ({ page }) => {
-  await page.goto('/projects')
+  await page.goto(LATER!.to)
   await settled(page)
 
-  const blog = await page.locator('header nav a', { hasText: 'блог' }).boundingBox()
-  const projects = await page.locator('header nav a', { hasText: 'проекты' }).boundingBox()
-  const y = blog!.y + blog!.height / 2
+  const earlier = await link(page, EARLIER!.to).boundingBox()
+  const later = await link(page, LATER!.to).boundingBox()
+  const y = earlier!.y + earlier!.height / 2
 
-  for (let x = blog!.x + blog!.width; x < projects!.x; x += 2) {
+  for (let x = earlier!.x + earlier!.width; x < later!.x; x += 2) {
     await page.mouse.move(x, y)
     const marked = await page.locator('header nav [data-hover]').count()
     expect(marked).toBe(1)
@@ -81,20 +86,20 @@ test('the header is built from the settings, not from the code', async ({ page }
   await page.goto('/')
   await settled(page)
   const words = await page.locator('header nav a').allTextContents()
-  expect(words.map((w) => w.trim())).toEqual(site.sections.map((s) => say(s.label, 'ru')))
+  expect(words.map((w) => w.trim())).toEqual(site.sections.map((s) => say(s.label, FIRST)))
 
   const other = site.languages[1]!
   await expect(page.locator(`header a[href^="/${other.code}"]`)).toHaveAttribute('aria-label', other.label)
 })
 
 test('the row does not change height while the type travels', async ({ page }) => {
-  await page.goto('/blog')
+  await page.goto(EARLIER!.to)
   await settled(page)
 
   const height = () => page.locator('header').evaluate((el) => el.getBoundingClientRect().height)
   const seen = new Set<number>([Math.round(await height())])
 
-  await page.locator('header nav a', { hasText: 'проекты' }).hover()
+  await link(page, LATER!.to).hover()
   for (let i = 0; i < 6; i++) {
     await page.waitForTimeout(90)
     seen.add(Math.round(await height()))
@@ -134,7 +139,7 @@ test('one row highlights, not both at once', async ({ page }) => {
     tabs: document.querySelectorAll('main .choices [data-hover]').length,
   }))
 
-  await page.locator('header nav a', { hasText: 'блог' }).hover()
+  await link(page, EARLIER!.to).hover()
   await expect.poll(lit).toEqual({ header: 1, tabs: 0 })
 
   await page.locator('main .choices button').last().hover()

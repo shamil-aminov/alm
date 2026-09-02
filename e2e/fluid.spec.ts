@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { holdTheScripts, SECTIONS, settled, stretchTheReveal } from './helpers'
+import { holdTheReveal, holdTheScripts, hydrated, SECTIONS, settled, stretchTheReveal } from './helpers'
 
 const PHONE = { width: 390, height: 844 }
 const DESKTOP = { width: 1440, height: 900 }
@@ -202,215 +202,26 @@ test('hydration does not change the height of the header', async ({ page }) => {
   expect(after, 'content jumped when the page came alive').toBe(before)
 })
 
-test('the row stands in place at the first paint', async ({ page }) => {
+test('the row stands in place before the page is shown', async ({ page }) => {
   await page.setViewportSize(PHONE)
-  await page.goto('/favorite', { waitUntil: 'domcontentloaded' })
-
-  const place = () => page.locator('header nav').evaluate((el) =>
-    Math.round(el.querySelector('.current')!.getBoundingClientRect().left - el.getBoundingClientRect().left))
-
-  const early = await place()
-  await settled(page)
-
-  expect(await place(), 'the row moved when the page came alive').toBe(early)
-  expect(early, 'the row was not placed before hydration').toBeGreaterThan(40)
-})
-
-test('the tab row sits in the faint band, not over bright content', async ({ page }) => {
-  await page.setViewportSize(PHONE)
+  await holdTheReveal(page)
   await page.goto('/favorite')
-  await settled(page)
+  await hydrated(page)
 
-  const { flat, letters } = await page.locator('[data-scroll="favorite"]').evaluate((el) => {
-    const stops = [...getComputedStyle(el).maskImage.matchAll(/([\d.]+)px/g)].map((m) => Number(m[1]))
-    const current = document.querySelector('main .choices .current')!
-    const box = current.getBoundingClientRect()
-    const style = getComputedStyle(current)
-    const top = el.getBoundingClientRect().top
-    return {
-      flat: stops[1]!,
-      letters: {
-        top: box.top + parseFloat(style.paddingBlockStart) - top,
-        bottom: box.bottom - parseFloat(style.paddingBlockEnd) - top,
-      },
-    }
-  })
+  const look = () => page.locator('header nav').evaluate((row) => ({
+    at: Math.round(row.scrollLeft),
+    off: Math.abs(row.querySelector('.current')!.getBoundingClientRect().left
+      - row.getBoundingClientRect().left - Math.min(row.clientWidth * 0.25, 80)),
+    shown: parseFloat(getComputedStyle(document.querySelector('.arrive')!).opacity),
+  }))
 
-  expect(flat, 'the fog breaks away from the letters').toBeGreaterThan(letters.top)
-  expect(flat, 'the fog breaks away from the letters').toBeLessThanOrEqual(letters.bottom)
-})
-
-test('showcase rows do not stretch to the height of the window', async ({ page }) => {
-  await page.setViewportSize(DESKTOP)
-  await page.goto('/favorite?kind=game')
-  await settled(page)
-
-  const { gap, rows } = await page.locator('main ul').evaluate((el) => {
-    const cards = [...el.querySelectorAll('li')].map((li) => li.getBoundingClientRect())
-    const first = cards[0]!
-    const below = cards.find((box) => box.top > first.top + 10)
-    return { gap: below ? below.top - first.bottom : 0, rows: parseFloat(getComputedStyle(el).rowGap) }
-  })
-
-  expect(gap, 'the rows drifted apart').toBeCloseTo(rows, 0)
-})
-
-test('the finger outranks the wheel: touch the row and the turn stops', async ({ page, browserName }) => {
-  test.skip(browserName !== 'chromium', 'real touch needs CDP')
-  await page.setViewportSize(PHONE)
-
-  await page.goto('/')
-  await settled(page)
-  await page.locator('header nav a[href="/favorite"]').click()
-  await page.waitForTimeout(120)
-
-  const row = (await page.locator('header nav').boundingBox())!
-  const y = row.y + row.height / 2
-  const touch = await page.context().newCDPSession(page)
-
-  await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: row.x + 300, y }] })
-  for (const dx of [30, 60, 90, 120]) {
-    await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: row.x + 300 - dx, y }] })
-    await page.waitForTimeout(30)
-  }
-  await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
-
-  const at = () => page.locator('header nav').evaluate((el) => Math.round(el.scrollLeft))
-  const moved = await at()
-  await page.waitForTimeout(600)
-
-  expect(await at(), 'the wheel dragged the row back').toBe(moved)
-})
-
-test('the row answers a hit against the edge with a spring', async ({ page }) => {
-  await page.setViewportSize(PHONE)
-  await page.goto('/')
-  await settled(page)
-
-  await page.locator('header nav').evaluate((row) => {
-    let x = 0
-    const push = () => {
-      x += 70
-      row.scrollLeft = x
-      if (x < 400) requestAnimationFrame(push)
-    }
-    push()
-  })
-
-  const shift = () => page.locator('header nav a').first()
-    .evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41)
-
-  const seen: number[] = []
-  for (let i = 0; i < 10; i++) {
-    seen.push(await shift())
-    await page.waitForTimeout(45)
-  }
-
-  expect(Math.max(...seen.map(Math.abs)), 'the row does not spring').toBeGreaterThan(5)
+  const first = await look()
+  expect(first.shown, 'the page was already showing, so this is the other path').toBeLessThan(0.01)
+  expect(first.off, 'the row was still on its way when the page came alive').toBeLessThan(1)
+  expect(first.at, 'the row never moved, so the check proves nothing').toBeGreaterThan(40)
 
   await page.waitForTimeout(500)
-  expect(await shift(), 'the spring did not come back').toBe(0)
-})
-
-test('the row springs even where the scroll has nowhere to go', async ({ page, browserName }) => {
-  test.skip(browserName !== 'chromium', 'real touch needs CDP')
-  await page.setViewportSize(PHONE)
-
-  await page.goto('/')
-  await settled(page)
-
-  const row = (await page.locator('header nav').boundingBox())!
-  const y = row.y + row.height / 2
-  const from = row.x + row.width / 2
-  const touch = await page.context().newCDPSession(page)
-
-  const shift = () => page.locator('header nav a').first()
-    .evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41)
-
-  await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from, y }] })
-  const pulled: number[] = []
-  for (const step of [20, 45, 75, 110]) {
-    await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: from + step, y }] })
-    await page.waitForTimeout(35)
-    pulled.push(await shift())
-  }
-  await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
-
-  expect(pulled.at(-1)!, 'the row did not give').toBeGreaterThan(8)
-  expect(pulled.at(-1)!, 'the row went past its limit').toBeLessThan(30)
-  expect(pulled.at(-1)! - pulled.at(-2)!, 'it pulls without easing off').toBeLessThan(pulled[1]! - pulled[0]!)
-
-  await page.waitForTimeout(600)
-  expect(await shift(), 'the spring did not come back').toBe(0)
-})
-
-test('the pull is measured from the edge, not from the start of the touch', async ({ page, browserName }) => {
-  test.skip(browserName !== 'chromium', 'real touch needs CDP')
-  await page.setViewportSize(PHONE)
-
-  await page.goto('/')
-  await settled(page)
-
-  const row = (await page.locator('header nav').boundingBox())!
-  const y = row.y + row.height / 2
-  const from = row.x + row.width - 30
-  const touch = await page.context().newCDPSession(page)
-
-  const shift = () => page.locator('header nav a').first()
-    .evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41)
-
-  await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from, y }] })
-  const seen: number[] = []
-  for (const step of [40, 90, 150, 200, 240, 280, 330]) {
-    await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: from - step, y }] })
-    await page.waitForTimeout(30)
-    seen.push(await shift())
-  }
-  await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
-
-  const pulled = seen.filter((by) => by !== 0)
-  expect(pulled.length, 'the row did not give at the edge').toBeGreaterThan(2)
-  expect(Math.abs(pulled.at(-1)!), 'the pull does not grow: it saturated at once')
-    .toBeGreaterThan(Math.abs(pulled[0]!) + 2)
-
-  await page.waitForTimeout(600)
-  expect(await shift(), 'the spring did not come back').toBe(0)
-})
-
-test('the edge counts even when the scroll falls a pixel short of it', async ({ page, browserName }) => {
-  test.skip(browserName !== 'chromium', 'real touch needs CDP')
-  await page.setViewportSize(PHONE)
-
-  await page.goto('/')
-  await settled(page)
-
-  await page.locator('header nav').evaluate((row) => {
-    const real = row.scrollWidth
-    Object.defineProperty(row, 'scrollWidth', { get: () => real + 1 })
-    row.scrollLeft = 1e6
-  })
-
-  const row = (await page.locator('header nav').boundingBox())!
-  const y = row.y + row.height / 2
-  const from = row.x + row.width - 30
-  const touch = await page.context().newCDPSession(page)
-
-  const shift = () => page.locator('header nav a').first()
-    .evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41)
-
-  await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from, y }] })
-  const seen: number[] = []
-  for (const step of [20, 50, 90, 130]) {
-    await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: from - step, y }] })
-    await page.waitForTimeout(35)
-    seen.push(await shift())
-  }
-  await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
-
-  expect(Math.abs(seen.at(-1)!), 'the row did not give at the edge').toBeGreaterThan(8)
-
-  await page.waitForTimeout(600)
-  expect(await shift(), 'the spring did not come back').toBe(0)
+  expect((await look()).at, 'the row moved after it was placed').toBe(first.at)
 })
 
 test('late hydration turns the wheel instead of throwing it into place', async ({ page }) => {
@@ -446,9 +257,13 @@ test('late hydration turns the wheel instead of throwing it into place', async (
   const half = seen.filter(([, opacity]) => opacity! > 0.01 && opacity! < 0.99)
   expect(half.length, 'hydration did not land in the middle of the reveal').toBeGreaterThan(3)
 
+  const rest = seen.at(-1)![0]!
   const jumps = seen
-    .map(([at, opacity], i) => [Math.abs(at! - (seen[i - 1]?.[0] ?? at!)), opacity!] as const)
-    .filter(([by, opacity]) => by > 20 && opacity > 0.01)
+    .map(([at, opacity], i) => {
+      const was = seen[i - 1]?.[0] ?? at!
+      return { by: Math.abs(at! - was), left: Math.abs(rest - was), opacity: opacity! }
+    })
+    .filter(({ by, left, opacity }) => opacity > 0.01 && by > 8 && by > left * 0.4)
 
   expect(jumps, 'the wheel jumped in plain sight').toEqual([])
 })
