@@ -38,17 +38,17 @@ export function useSpring(target: Ref<HTMLElement | null>) {
 
   const give = (by: number) => Math.sign(by) * REACH * (1 - 1 / (1 + Math.abs(by) / 90))
 
-  let holding = 0
+  let holding: number | null = null
 
   function hold(event: TouchEvent) {
     const touch = event.touches[0]
-    holding = touch?.clientX ?? 0
+    holding = touch ? touch.clientX : null
   }
 
   function pull(event: TouchEvent) {
     const el = target.value
     const touch = event.touches[0]
-    if (!el || !touch || still()) return
+    if (!el || !touch || still() || holding === null) return
 
     const by = touch.clientX - holding
     const pulling = (atStart(el) && by > 0) || (atEnd(el) && by < 0)
@@ -64,7 +64,7 @@ export function useSpring(target: Ref<HTMLElement | null>) {
     shift(pulled)
   }
 
-  const let_go = () => release(pulled)
+  const let_go = () => { holding = null; release(pulled) }
 
   let was = 0
   let when = 0

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { holdTheReveal, holdTheScripts, hydrated, SECTIONS, settled, stretchTheReveal } from './helpers'
+import { CARDS, holdTheReveal, holdTheScripts, hydrated, inSecond, PROJECTS, SECOND, SECTIONS, settled, stretchTheReveal } from './helpers'
 
 const PHONE = { width: 390, height: 844 }
 const DESKTOP = { width: 1440, height: 900 }
@@ -71,11 +71,15 @@ test('on a phone the header is one line and scrolls sideways', async ({ page }) 
   })
   expect(shown, 'the current section is not pulled into view').toBe(true)
 
-  const language = await page.locator('header > a').boundingBox()
-  expect(language!.x + language!.width).toBeLessThanOrEqual(PHONE.width)
+  if (SECOND) {
+    const language = await page.locator('header > a').boundingBox()
+    expect(language!.x + language!.width).toBeLessThanOrEqual(PHONE.width)
+  }
 })
 
 test('a narrow cover fits two to a row on a phone, a wide one takes the row', async ({ page }) => {
+  test.skip(!CARDS || !PROJECTS, 'this site has no cards to lay out')
+
   await page.setViewportSize(PHONE)
 
   const perRow = async (to: string) => {
@@ -177,7 +181,7 @@ test('the wheel arrives in one movement, with no rebound', async ({ page }) => {
 test('the wheel behaves the same in either language', async ({ page }) => {
   await page.setViewportSize(PHONE)
 
-  for (const to of ['/blog', '/en/blog']) {
+  for (const to of ['/blog', ...(SECOND ? [inSecond('/blog')] : [])]) {
     await page.goto(to)
     await settled(page)
 
@@ -225,6 +229,8 @@ test('the row stands in place before the page is shown', async ({ page }) => {
 })
 
 test('the tab row sits in the faint band, not over bright content', async ({ page }) => {
+  test.skip(!CARDS, 'this site has nothing in favorites yet')
+
   await page.setViewportSize(PHONE)
   await page.goto('/favorite')
   await settled(page)
@@ -249,6 +255,8 @@ test('the tab row sits in the faint band, not over bright content', async ({ pag
 })
 
 test('showcase rows do not stretch to the height of the window', async ({ page }) => {
+  test.skip(!CARDS, 'this site has nothing in favorites yet')
+
   await page.setViewportSize(DESKTOP)
   await page.goto('/favorite?kind=game')
   await settled(page)

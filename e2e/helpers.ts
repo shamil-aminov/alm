@@ -19,7 +19,11 @@ export const lost = (lang: string) => JSON.parse(
 export const FIRST = site.languages[0]!.code
 export const SECOND = site.languages[1]?.code
 
+export const inSecond = (path: string) => `/${SECOND}${path === '/' ? '' : path}`
+
 export const TABS = site.favorite.filter((kind) => favorites.some((card) => card.kind === kind.kind))
+
+export const CARDS = favorites.length
 
 const written = new Map<string, string[]>()
 for (const file of readdirSync(new URL('../content/blog', import.meta.url))) {
@@ -29,6 +33,10 @@ for (const file of readdirSync(new URL('../content/blog', import.meta.url))) {
   const slug = name.slice(0, dot)
   written.set(slug, [...(written.get(slug) ?? []), name.slice(dot + 1)])
 }
+
+export const POSTS = written.size
+
+export const SLUGS = [...written.keys()]
 
 const first = site.languages[0]!.code
 

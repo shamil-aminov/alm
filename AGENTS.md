@@ -60,15 +60,27 @@ translation. One language is fine too: the switch hides itself.
 **Raw HTML inside a post is dropped, not sanitized.** Sanitizing is a guess about
 what is safe; dropping is a rule. Link schemes are checked in the same place.
 
+**Sections and favorite tabs are one chain.** `shared/stops.ts` flattens the header
+into a list of places — sections, with `/favorite` expanded into its tabs — and both the
+side a transition travels and where a swipe lands are read from it. It also strips the
+language prefix, taking the codes from `site.ts` rather than assuming a second language
+is called `en`.
+
 **Prerendering is a correctness check.** `nuxi generate` crawls links with
 `failOnError`, so a broken link inside content fails the build instead of reaching
 the host.
 
 **So is `build/check.ts`.** Before anything is built it refuses content that would
-fail silently rather than loudly: a cover that names a file `public/` does not have,
-a post whose language is not in `site.ts` (it would simply never appear), a date not
-written `YYYY-MM-DD`, a card of a kind that has no tab. Addresses that point at a
+fail silently rather than loudly: a cover or a picture inside a post that names
+a file `public/` does not have, a post whose language is not in `site.ts` (it would
+simply never appear), a date not written `YYYY-MM-DD`, a card of a kind that has no tab. Addresses that point at a
 bucket are left alone — there is nothing on disk to check.
+
+**The feed and the sitemap are built from the same pages as the site.**
+`server/utils/content.ts` runs every post through `build/content.ts`, so a title in the
+feed cannot drift from the title on the page. Both read `content/` from the working
+directory, which is where a build stands; served rather than generated, they refuse to
+run instead of quietly returning nothing.
 
 **Layout is fluid, with no breakpoints.** Sizes and spacing are `clamp()` tokens in
 `app/assets/main.css`; grids use `repeat(auto-fill, minmax(...))`. There is not a

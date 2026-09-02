@@ -17,7 +17,7 @@ usePageSeo(() => ({ title: sectionName('/projects', lang) }))
     <h1 class="sr-only">{{ sectionName('/projects', lang) }}</h1>
 
     <ul class="edge cards" style="--card-min: 11rem; --shape: 16/9; --card-share: 45%">
-      <li v-for="card in cards" :key="say(card.title, 'ru')" class="staggered">
+      <li v-for="(card, at) in cards" :key="at" class="staggered">
         <NuxtLink v-if="card.story" :to="card.story" class="block">
           <Cover :src="card.cover" :alt="say(card.title, lang)" ratio="16/9" />
         </NuxtLink>

@@ -1,5 +1,4 @@
-import { bare } from '~/composables/useMotion'
-import { stopAt, stops } from '~/utils/content'
+import { bare, stopAt, stops } from '~/utils/content'
 
 const EDGE = 28
 const FAR = 48

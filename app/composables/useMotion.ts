@@ -1,10 +1,8 @@
-import { stopAt } from '~/utils/content'
+import { bare, stopAt } from '~/utils/content'
 
 export const useDirection = () => useState('direction', () => 1)
 
 export const useInPlace = () => useState('in-place', () => false)
-
-export const bare = (path: string) => path.replace(/^\/en(?=\/|$)/, '') || '/'
 
 function locate(route: { path: string, query: Record<string, unknown> }) {
   const path = bare(route.path)

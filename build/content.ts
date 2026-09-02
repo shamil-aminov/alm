@@ -6,7 +6,9 @@ import type { Plugin } from 'vite'
 import type { Page } from '../shared/content.ts'
 import { parsePost } from '../shared/post.ts'
 
-const PUBLIC = join(import.meta.dirname, '../public')
+const ROOT = process.cwd()
+const PUBLIC = join(ROOT, 'public')
+const CONTENT = join(ROOT, 'content') + '/'
 
 const escape = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
@@ -51,7 +53,15 @@ function plainText(tokens: Token[]) {
   return words.join(' ').replace(/\s+/g, ' ').trim()
 }
 
-function page(fileName: string, text: string): Page {
+export function imagesIn(body: string) {
+  const found: string[] = []
+  markdown.walkTokens(markdown.lexer(body), (token) => {
+    if (token.type === 'image') found.push((token as Tokens.Image).href)
+  })
+  return found
+}
+
+export function page(fileName: string, text: string): Page {
   const post = parsePost(fileName, text)
   const tokens = markdown.lexer(post.body)
 
@@ -65,6 +75,7 @@ function page(fileName: string, text: string): Page {
     title: post.title ?? heading?.text ?? '',
     date: post.date,
     excerpt: plainText(rest).slice(0, 300),
+    opensWithTitle: !!heading,
     html: markdown.parser(tokens),
   }
 }
@@ -76,7 +87,7 @@ export function content(): Plugin {
 
     transform(code, id) {
       const path = id.split('?')[0]!
-      if (!path.includes('/content/') || !path.endsWith('.md')) return
+      if (!path.startsWith(CONTENT) || !path.endsWith('.md')) return
 
       const fileName = path.split('/').pop()!
       return { code: `export default ${JSON.stringify(page(fileName, code))}`, map: null }

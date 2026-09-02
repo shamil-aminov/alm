@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import site from '../content/site.ts'
 import { say } from '../shared/content.ts'
-import { FIRST, LISTED, TABS, settled } from './helpers'
+import { FIRST, LISTED, PROJECTS, SECOND, TABS, settled } from './helpers'
 
 const [EARLIER, LATER] = LISTED
 const link = (page: import('@playwright/test').Page, to: string) =>
@@ -74,6 +74,8 @@ test('there is nothing to select in a row, but the text of a post selects', asyn
 })
 
 test('tabs are the same buttons as the items of the header', async ({ page }) => {
+  test.skip(!TABS.length, 'this site has no tabs')
+
   await page.goto('/favorite')
   await settled(page)
 
@@ -88,7 +90,10 @@ test('the header is built from the settings, not from the code', async ({ page }
   const words = await page.locator('header nav a').allTextContents()
   expect(words.map((w) => w.trim())).toEqual(site.sections.map((s) => say(s.label, FIRST)))
 
-  const other = site.languages[1]!
+  const other = site.languages[1]
+  if (!other) return expect(await page.locator('header a.language').count(),
+    'a site with one language still offers a switch').toBe(0)
+
   await expect(page.locator(`header a[href^="/${other.code}"]`)).toHaveAttribute('aria-label', other.label)
 })
 
@@ -115,6 +120,8 @@ test('the row does not change height while the type travels', async ({ page }) =
 })
 
 test('a finger can hit a tab, not only a cursor', async ({ page }) => {
+  test.skip(!TABS.length, 'this site has no tabs')
+
   await page.goto('/favorite')
   await settled(page)
 
@@ -147,6 +154,8 @@ test('one row highlights, not both at once', async ({ page }) => {
 })
 
 test('switching language does not rewind the wheel', async ({ page }) => {
+  test.skip(!SECOND, 'this site speaks one language')
+
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/favorite')
   await settled(page)
@@ -172,4 +181,34 @@ test('switching language does not rewind the wheel', async ({ page }) => {
   const seen = await page.evaluate(() => (window as unknown as { seen: number[] }).seen)
   const rewound = seen.filter((one) => one < before / 2).length
   expect(rewound, 'the wheel went back to the start and turned again').toBeLessThan(3)
+})
+
+test('which tab is open is said, not only drawn', async ({ page }) => {
+  test.skip(TABS.length < 2, 'this site has no tabs to open')
+
+  await page.goto('/favorite')
+  await settled(page)
+
+  const said = () => page.locator('main .choices button[aria-current="true"]').allTextContents()
+  expect(await said(), 'no tab tells a reader that it is the open one').toHaveLength(1)
+
+  const second = (await page.locator('main .choices button').nth(1).textContent())!
+  await page.locator('main .choices button').nth(1).click()
+  await expect.poll(said, { message: 'the open tab was not the one that was clicked' }).toEqual([second])
+})
+
+test('the keyboard leaves a mark that can be seen on black', async ({ page }) => {
+  test.skip(!PROJECTS, 'this site has no projects to focus')
+
+  await page.goto('/projects')
+  await settled(page)
+
+  const ring = await page.locator('main a').first().evaluate((el) => {
+    el.focus()
+    const style = getComputedStyle(el)
+    return { width: parseFloat(style.outlineWidth), color: style.outlineColor, style: style.outlineStyle }
+  })
+  expect(ring.style, 'a focused link draws no outline').not.toBe('none')
+  expect(ring.width, 'the outline is too thin to notice').toBeGreaterThanOrEqual(2)
+  expect(ring.color, 'the outline is not the site\'s own colour').toBe('rgb(255, 255, 255)')
 })

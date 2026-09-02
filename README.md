@@ -45,9 +45,12 @@ The switch steps to the next language in the list and comes back round from the 
 skipping any language a post has not been translated into: no translation means no
 link.
 
-The build refuses content that would break quietly: a cover naming a file that is not
-in `public/`, a post in a language `site.ts` does not list, a date not written
-`YYYY-MM-DD`, a card of a kind with no tab. You hear about it at `npm run generate`,
+A post takes its title from the frontmatter, and if there is none, from the heading
+the body opens with — then the page shows that heading and does not repeat it above.
+
+The build refuses content that would break quietly: a cover or a picture inside a post
+naming a file that is not in `public/`, a post in a language `site.ts` does not list, a
+date not written `YYYY-MM-DD`, a card of a kind with no tab. You hear about it at `npm run generate`,
 not from a visitor.
 
 A draft is an uncommitted file. There are no visibility flags: what is not in the
@@ -56,6 +59,14 @@ build is not on the site.
 Images are plain addresses. The demo content points at `/demo.webp` inside the
 repository, so a fresh clone shows a working site without a single service. Real
 images go into any public bucket and the file holds the direct address.
+
+## Moving around
+
+The header is the map: sections in the order `site.ts` lists them. On a phone a finger
+walks the same order — a swipe turns to the next section, and inside favorites to the
+next tab, so films, music and games are three stops on one line rather than a
+detour. Twenty-eight pixels at each edge are left to the system's own back gesture, and
+a swipe along a row that already scrolls sideways stays with the row.
 
 ## The look
 

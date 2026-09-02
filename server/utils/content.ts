@@ -1,22 +1,21 @@
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { page } from '../../build/content.ts'
 import config from '../../content/site.ts'
-import { byDate, type Post } from '../../shared/content.ts'
-import { parsePost } from '../../shared/post.ts'
+import { byDate, type Page } from '../../shared/content.ts'
 
-const BLOG = join(process.cwd(), 'content/blog')
+const CONTENT = join(process.cwd(), 'content')
+const BLOG = join(CONTENT, 'blog')
 
-function readBlog(): Post[] {
-  let names: string[] = []
-  try {
-    names = readdirSync(BLOG)
-  } catch {
-    return []
+function readBlog(): Page[] {
+  if (!existsSync(CONTENT)) {
+    throw new Error(`no content at ${CONTENT}: the feed and the sitemap are read from files, so this site has to be generated, not served`)
   }
+  if (!existsSync(BLOG)) return []
 
-  return names
+  return readdirSync(BLOG)
     .filter((name) => name.endsWith('.md'))
-    .map((name) => parsePost(name, readFileSync(join(BLOG, name), 'utf8')))
+    .map((name) => page(name, readFileSync(join(BLOG, name), 'utf8')))
     .sort(byDate)
 }
 

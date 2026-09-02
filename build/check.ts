@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Plugin } from 'vite'
+import { imagesIn } from './content.ts'
 import { checkContent } from '../shared/check.ts'
 import { parsePost } from '../shared/post.ts'
 import favorites from '../content/favorite.ts'
@@ -18,7 +19,7 @@ function posts() {
           ...loose.map((name) => [name, join(ROOT, 'content', name)] as const)]
     .map(([file, path]) => {
       const post = parsePost(file.split('/').pop()!, readFileSync(path, 'utf8'))
-      return { file: 'content/' + file, lang: post.lang, date: post.date }
+      return { file: 'content/' + file, lang: post.lang, date: post.date, body: post.body }
     })
 }
 
@@ -28,13 +29,15 @@ export function check(): Plugin {
     enforce: 'pre',
 
     buildStart() {
+      const written = posts()
       const complaints = checkContent({
         languages: site.languages.map((one) => one.code),
         kinds: site.favorite.map((one) => one.kind),
         present: (src) => existsSync(join(ROOT, 'public', src)),
-        posts: posts(),
+        posts: written,
         images: [
           ...(site.ogImage ? [{ where: 'content/site.ts', src: site.ogImage }] : []),
+          ...written.flatMap(({ file, body }) => imagesIn(body).map((src) => ({ where: file, src }))),
           ...favorites.flatMap((card, at) =>
             card.cover ? [{ where: `content/favorite.ts #${at + 1}`, src: card.cover }] : []),
           ...projects.flatMap((card, at) =>

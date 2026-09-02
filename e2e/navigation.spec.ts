@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { say } from '../shared/content.ts'
-import { FIRST, PROJECTS, SECOND, SECTIONS, TABS, direction, go, settled, watchConsole } from './helpers'
+import { FIRST, POSTS, PROJECTS, SECOND, SECTIONS, TABS, direction, go, inSecond, settled, watchConsole } from './helpers'
 
 test.describe('travel between sections', () => {
   test('it goes where the eye goes along the header', async ({ page }) => {
@@ -15,6 +15,8 @@ test.describe('travel between sections', () => {
   })
 
   test('into a post rightwards, out of it leftwards', async ({ page }) => {
+    test.skip(!POSTS, 'this site has no posts yet')
+
     await page.goto('/blog')
     await settled(page)
 
@@ -30,13 +32,15 @@ test.describe('travel between sections', () => {
   })
 
   test('the language changes with the page, not before it', async ({ page }) => {
+    test.skip(!SECOND, 'this site speaks one language')
+
     await page.goto('/favorite')
     await settled(page)
 
     const tab = page.locator('main button').first()
     await expect(tab).toHaveText(say(TABS[0]!.label, FIRST))
 
-    await page.locator('header a[href^="/en"]').click()
+    await page.locator(`header a[href^="/${SECOND}"]`).click()
 
     await page.waitForTimeout(80)
     await expect(tab).toHaveText(say(TABS[0]!.label, FIRST))
@@ -46,11 +50,13 @@ test.describe('travel between sections', () => {
   })
 
   test('switching language does not move the page: it is the same page', async ({ page }) => {
+    test.skip(!SECOND, 'this site speaks one language')
+
     await page.goto('/blog')
     await settled(page)
 
-    await page.locator('header a[href^="/en"]').click()
-    await expect(page).toHaveURL(/\/en\/blog/)
+    await page.locator(`header a[href^="/${SECOND}"]`).click()
+    await expect(page).toHaveURL(new RegExp(`${inSecond('/blog')}`))
 
     await expect(page.locator('.h-dvh')).toHaveClass(/in-place/)
     await settled(page)
@@ -58,6 +64,8 @@ test.describe('travel between sections', () => {
   })
 
   test('the outgoing page stays put while it leaves', async ({ page }) => {
+    test.skip(!POSTS, 'this site has no posts yet')
+
     await page.goto('/projects')
     await settled(page)
 
@@ -85,6 +93,8 @@ test.describe('travel between sections', () => {
 
 test.describe('scroll', () => {
   test('through the header from the top, with the back button back into place', async ({ page }) => {
+    test.skip(!POSTS, 'this site has no posts yet')
+
     await page.goto('/favorite')
     await settled(page)
 
@@ -118,6 +128,8 @@ test.describe('pages are whole', () => {
   }
 
   test('the whole entry leads into the post, not just its title', async ({ page }) => {
+    test.skip(!POSTS, 'this site has no posts yet')
+
     await page.goto('/blog')
     await settled(page)
 
@@ -161,6 +173,8 @@ test.describe('pages are whole', () => {
   })
 
   test('a section stays alive after clicking through its tabs', async ({ page }) => {
+    test.skip(TABS.length < 2, 'this site has no tabs to click through')
+
     const bad = watchConsole(page)
     await page.goto('/favorite')
     await settled(page)

@@ -23,7 +23,6 @@ export default defineNuxtConfig({
   app: {
     head: {
       link: [
-        { rel: 'alternate', type: 'application/rss+xml', href: '/rss.xml' },
         { rel: 'icon', type: 'image/svg+xml', href: '/icon.svg' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
       ],

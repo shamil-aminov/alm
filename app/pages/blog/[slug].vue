@@ -23,7 +23,7 @@ usePageSeo(() => ({ title: article.value?.title, summary: article.value?.excerpt
     <NotFound v-if="!article" />
 
     <article v-else class="column stagger">
-      <h1 v-if="article.title" class="big">{{ article.title }}</h1>
+      <h1 v-if="article.title && !article.opensWithTitle" class="big">{{ article.title }}</h1>
       <div class="post small mt-8" v-html="article.html" />
 
       <p v-if="article.date" class="small mt-16">

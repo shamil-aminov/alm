@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { SECTIONS, TRANSLATED, box, settled } from './helpers'
+import { CARDS, POSTS, SECOND, SECTIONS, TABS, TRANSLATED, box, inSecond, settled } from './helpers'
 
 test('the gap between frames is one number everywhere and clearly thinner than the margin', async ({ page }) => {
   const seen = new Set<string>()
@@ -20,6 +20,8 @@ test('the gap between frames is one number everywhere and clearly thinner than t
 })
 
 test('the tabs stay put while the content travels', async ({ page }) => {
+  test.skip(TABS.length < 2, 'this site has no tabs to switch')
+
   await page.goto('/favorite')
   await settled(page)
 
@@ -57,6 +59,8 @@ test('the fog ends where the content begins', async ({ page }) => {
 })
 
 test('on a tabbed page the showcase scrolls, not the column', async ({ page }) => {
+  test.skip(!CARDS, 'this site has nothing in favorites yet')
+
   await page.goto('/favorite')
   await settled(page)
   const columnScrolls = await page.locator('[data-scroll="page"]')
@@ -65,7 +69,7 @@ test('on a tabbed page the showcase scrolls, not the column', async ({ page }) =
 })
 
 test('images are there, not addresses from a previous life', async ({ page }) => {
-  for (const to of [...SECTIONS, ...(TRANSLATED ? [`/blog/${TRANSLATED}`, `/en/blog/${TRANSLATED}`] : [])]) {
+  for (const to of [...SECTIONS, ...(TRANSLATED ? [`/blog/${TRANSLATED}`, ...(SECOND ? [inSecond(`/blog/${TRANSLATED}`)] : [])] : [])]) {
     await page.goto(to)
     await settled(page)
 
@@ -81,6 +85,8 @@ test('images are there, not addresses from a previous life', async ({ page }) =>
 })
 
 test('a headline never outgrows the column it is set in', async ({ page }) => {
+  test.skip(!POSTS, 'this site has no posts yet')
+
   for (const width of [390, 700, 1100, 1440, 1700, 2560]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/blog')
@@ -100,6 +106,8 @@ test('a headline never outgrows the column it is set in', async ({ page }) => {
 })
 
 test('a frame holds its place while the picture is still coming', async ({ page }) => {
+  test.skip(!CARDS, 'this site has nothing in favorites yet')
+
   let release: (() => void) | undefined
   await page.route('**/*.webp', async (route) => {
     await new Promise<void>((go) => { release = go })

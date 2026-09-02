@@ -113,7 +113,7 @@ function showCurrent(smoothly = true) {
   chasing = requestAnimationFrame(chase)
 }
 
-let placed = 0
+let placed: number | null = 0
 
 function outOfSight() {
   let seen = 1
@@ -151,8 +151,10 @@ onMounted(() => {
 
     if (wheel) {
       fitWheel(row)
-      if (resized && row.scrollLeft === placed) placeWheel(row)
-      placed = row.scrollLeft
+      if (placed !== null) {
+        if (resized && row.scrollLeft === placed) placeWheel(row)
+        placed = row.scrollLeft
+      }
     }
     markRowEdges(row)
   })
@@ -173,7 +175,7 @@ function onScroll() {
 function takeOver() {
   cancelAnimationFrame(chasing)
   chasing = 0
-  placed = -1
+  placed = null
 }
 </script>
 

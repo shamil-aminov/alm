@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { settled, TABS } from './helpers'
+import { SECOND, settled, TABS } from './helpers'
 
 const PHONE = { width: 390, height: 844 }
 
@@ -85,4 +85,30 @@ test('a swipe lands while the page is still arriving', async ({ page }, info) =>
 
   await swipe(page, -140)
   expect(new URL(page.url()).pathname, 'a swipe during the arrival was eaten').toBe('/favorite')
+})
+
+test('a swipe knows where it is in the second language too', async ({ page }, info) => {
+  onlyChromium(info.project.name)
+  test.skip(!SECOND, 'this site speaks one language')
+
+  await page.setViewportSize(PHONE)
+  await page.goto(`/${SECOND}/projects`)
+  await settled(page)
+
+  await swipe(page, -140)
+  expect(new URL(page.url()).pathname, 'a swipe went the wrong way behind a language prefix')
+    .toBe(`/${SECOND}/favorite`)
+})
+
+test('a section travels back in the second language too', async ({ page }) => {
+  test.skip(!SECOND, 'this site speaks one language')
+
+  await page.goto(`/${SECOND}/favorite`)
+  await settled(page)
+
+  await page.locator(`header nav a[href="/${SECOND}/blog"]`).click()
+  await page.waitForTimeout(150)
+
+  const dir = await page.locator('.arrive').evaluate((el) => getComputedStyle(el).getPropertyValue('--dir').trim())
+  expect(dir, 'going back behind a language prefix travelled forward').toBe('-1')
 })

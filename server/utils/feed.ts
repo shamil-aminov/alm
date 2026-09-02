@@ -4,13 +4,6 @@ import { escape } from './xml.ts'
 
 const BASE = site.url.replace(/\/$/, '')
 
-function titleOf(post: { title?: string, body: string }) {
-  if (post.title) return post.title
-
-  const first = post.body.split('\n').find((line) => line.trim()) ?? ''
-  return first.replace(/^#+\s*/, '').slice(0, 80)
-}
-
 export function feed(lang: string) {
   const home = lang === languages[0]!.code ? BASE : `${BASE}/${lang}`
 
@@ -19,10 +12,10 @@ export function feed(lang: string) {
     const published = post.date ? `\n    <pubDate>${new Date(post.date).toUTCString()}</pubDate>` : ''
 
     return `  <item>
-    <title>${escape(titleOf(post))}</title>
+    <title>${escape(post.title)}</title>
     <link>${link}</link>
     <guid isPermaLink="true">${link}</guid>${published}
-    <description>${escape(post.body)}</description>
+    <description>${escape(post.html)}</description>
   </item>`
   })
 

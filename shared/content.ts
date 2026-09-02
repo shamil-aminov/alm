@@ -55,6 +55,7 @@ export type Page = {
   title: string
   date?: string
   excerpt: string
+  opensWithTitle: boolean
   html: string
 }
 
