@@ -8,7 +8,7 @@ const PATIENCE = 800
 function scrollsSideways(from: Element | null) {
   for (let at = from; at && at !== document.body; at = at.parentElement) {
     const flow = getComputedStyle(at).overflowX
-    if ((flow === 'auto' || flow === 'scroll') && at.scrollWidth > at.clientWidth + 1) return true
+    if (flow === 'auto' || flow === 'scroll') return true
   }
   return false
 }

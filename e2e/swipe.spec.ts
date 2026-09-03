@@ -56,6 +56,20 @@ test('a swipe leaves alone what is not a swipe', async ({ page }, info) => {
   expect(page.url(), 'a swipe along the header left the page').toContain('/projects')
 })
 
+test('the finger on a row of tabs belongs to the row, not to the page', async ({ page }, info) => {
+  onlyChromium(info.project.name)
+  test.skip(!TABS.length, 'this site has no tabs')
+
+  await page.setViewportSize(PHONE)
+  await page.goto('/favorite')
+  await settled(page)
+
+  const row = (await page.locator('main .choices').boundingBox())!
+  await swipe(page, -140, { x: row.x + row.width / 2, y: row.y + row.height / 2 })
+  expect(new URL(page.url()).searchParams.get('kind'), 'a drag along the tabs turned the tab').toBe(null)
+  expect(new URL(page.url()).pathname, 'a drag along the tabs left the section').toBe('/favorite')
+})
+
 test('the tabs travel back the way they came', async ({ page }) => {
   test.skip(TABS.length < 3, 'needs three tabs')
 
