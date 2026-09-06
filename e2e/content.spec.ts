@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { checkContent } from '../shared/check.ts'
-import { byDate, nextLang, say } from '../shared/content.ts'
+import { byDate, lookUp, nextLang, say } from '../shared/content.ts'
 import { parsePost } from '../shared/post.ts'
 
 test.describe('post frontmatter', () => {
@@ -91,6 +91,7 @@ test.describe('what the build refuses to publish', () => {
     images: [{ where: 'favorite.ts', src: '/demo.webp' }],
     posts: [{ file: 'a.ru.md', lang: 'ru', date: '2026-08-01' }],
     cards: [{ where: 'favorite.ts', kind: 'film' }],
+    searches: [{ kind: 'film', search: 'https://elsewhere/{q}' }],
   }
 
   test('healthy content has nothing to say', () => {
@@ -117,8 +118,40 @@ test.describe('what the build refuses to publish', () => {
     expect(said.join(' ')).toContain('YYYY-MM-DD')
   })
 
+  test('a search that would send every card to the same page', () => {
+    const said = checkContent({ ...whole, searches: [{ kind: 'film', search: 'https://elsewhere/' }] })
+    expect(said.join(' ')).toContain('{q}')
+  })
+
   test('a card of a kind that has no tab', () => {
     const said = checkContent({ ...whole, cards: [{ where: 'favorite.ts', kind: 'movie' }] })
     expect(said.join(' ')).toContain('no tab')
+  })
+})
+
+test.describe('where a card leads', () => {
+  const KINDS = [{ kind: 'film', label: 'Films', search: 'https://elsewhere/search/{q}/' },
+                 { kind: 'game', label: 'Games' }]
+
+  test('asks in English, whatever language the page is in', () => {
+    const card = { kind: 'film', title: { ru: 'Заводной апельсин', en: 'A Clockwork Orange' } }
+    expect(lookUp(card, KINDS)).toBe('https://elsewhere/search/A%20Clockwork%20Orange/')
+  })
+
+  test('a title written once is asked for as it stands', () => {
+    expect(lookUp({ kind: 'film', title: 'Snatch' }, KINDS)).toBe('https://elsewhere/search/Snatch/')
+  })
+
+  test('a card that names its own address keeps it', () => {
+    const card = { kind: 'film', title: 'Minecraft', link: 'https://minecraft.net/' }
+    expect(lookUp(card, KINDS), 'the template overrode the card').toBe('https://minecraft.net/')
+  })
+
+  test('a kind without a search leads nowhere', () => {
+    expect(lookUp({ kind: 'game', title: 'Game 2' }, KINDS)).toBeUndefined()
+  })
+
+  test('a card without a title leads nowhere either', () => {
+    expect(lookUp({ kind: 'film' }, KINDS), 'asked the search for an empty string').toBeUndefined()
   })
 })

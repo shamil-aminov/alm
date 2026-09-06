@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
-import { CARDS, POSTS, PROJECTS, SECOND, SECTIONS, TABS, TRANSLATED, box, inSecond, settled } from './helpers'
+import { CARDS, POSTS, PROJECTS, SECOND, SECTIONS, SITE, TABS, TRANSLATED, box, inSecond, settled } from './helpers'
+import favorites from '../content/favorite.ts'
+import { lookUp } from '../shared/content.ts'
 
 test('the gap between frames is one number everywhere and clearly thinner than the margin', async ({ page }) => {
   const seen = new Set<string>()
@@ -129,4 +131,18 @@ test('a frame holds its place while the picture is still coming', async ({ page 
 
   for (const go of held) go()
   await expect.poll(() => cover.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+})
+
+test('a card leads out to its kind, both by the frame and by the caption', async ({ page }) => {
+  const first = TABS[0] && favorites.find((card) => card.kind === TABS[0]!.kind)
+  const to = first && lookUp(first, SITE.favorite)
+  test.skip(!to, 'nothing in favorites leads anywhere yet')
+
+  await page.goto('/favorite')
+  await settled(page)
+
+  const card = page.locator('[data-scroll="favorite"] li').first()
+  expect(await card.locator(`a[href="${to}"]`).count(),
+    'the frame and the caption should both lead to the same place').toBe(2)
+  await expect(card.locator('a').first()).toHaveAttribute('target', '_blank')
 })

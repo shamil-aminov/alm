@@ -7,6 +7,7 @@ export function checkContent(input: {
   present: (src: string) => boolean
   posts: { file: string, lang: string, date?: string }[]
   cards: { where: string, kind: string }[]
+  searches: { kind: string, search: string }[]
 }): Complaint[] {
   const complaints: Complaint[] = []
 
@@ -27,6 +28,12 @@ export function checkContent(input: {
   for (const { where, kind } of input.cards) {
     if (!input.kinds.includes(kind)) {
       complaints.push(`${where}: kind «${kind}» is not in site.ts, so this card has no tab`)
+    }
+  }
+
+  for (const { kind, search } of input.searches) {
+    if (!search.includes('{q}')) {
+      complaints.push(`content/site.ts: the search for «${kind}» has no {q}, so every card would lead to the same page`)
     }
   }
 

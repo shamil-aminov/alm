@@ -102,6 +102,7 @@ export default [
     title: { ru: 'Игра 1', en: 'Game 1' },
     author: { ru: 'Автор 1', en: 'Author 1' },
     cover: '/demo.webp',
+    link: 'https://example.com/game-1',
   },
   {
     kind: 'game',

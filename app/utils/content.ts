@@ -1,13 +1,13 @@
 import favorites from '~~/content/favorite'
 import projects from '~~/content/projects'
 import site from '~~/content/site'
-import { byDate, say, type Page } from '~~/shared/content'
+import { byDate, lookUp, say, type Page } from '~~/shared/content'
 import { bare, stopAt, stops, tabs } from '~~/shared/stops'
 
 const files = import.meta.glob<Page>('../../content/**/*.md', { import: 'default', eager: true })
 const pages = Object.entries(files).map(([path, page]) => ({ ...page, isPost: path.includes('/blog/') }))
 
-export { bare, favorites, projects, say, site, stopAt, stops, tabs }
+export { bare, favorites, lookUp, projects, say, site, stopAt, stops, tabs }
 export const { languages, sections } = site
 export const kinds = site.favorite
 

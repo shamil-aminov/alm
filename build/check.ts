@@ -44,6 +44,8 @@ export function check(): Plugin {
             card.cover ? [{ where: `content/projects.ts #${at + 1}`, src: card.cover }] : []),
         ],
         cards: favorites.map((card, at) => ({ where: `content/favorite.ts #${at + 1}`, kind: card.kind })),
+        searches: site.favorite.flatMap((one) =>
+          one.search ? [{ kind: one.kind, search: one.search }] : []),
       })
 
       if (complaints.length) {

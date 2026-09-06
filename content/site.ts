@@ -25,10 +25,15 @@ export default {
     { to: '/favorite', label: { ru: 'Любимое', en: 'Favorite' } },
   ],
 
+  // {q} is the English title of the card. A card can name its own address instead.
   favorite: [
-    { kind: 'film',  label: { ru: 'Фильмы', en: 'Films' }, ratio: '2/3' },
-    { kind: 'music', label: { ru: 'Музыка', en: 'Music' }, ratio: '1/1' },
-    { kind: 'game',  label: { ru: 'Игры',   en: 'Games' }, ratio: '2/3' },
-    { kind: 'book',  label: { ru: 'Книги',  en: 'Books' }, ratio: '2/3' },
+    { kind: 'film',  label: { ru: 'Фильмы', en: 'Films' }, ratio: '2/3',
+      search: 'https://letterboxd.com/search/films/{q}/' },
+    { kind: 'music', label: { ru: 'Музыка', en: 'Music' }, ratio: '1/1',
+      search: 'https://music.youtube.com/search?q={q}' },
+    { kind: 'game',  label: { ru: 'Игры',   en: 'Games' }, ratio: '2/3',
+      search: 'https://store.steampowered.com/search/?term={q}' },
+    { kind: 'book',  label: { ru: 'Книги',  en: 'Books' }, ratio: '2/3',
+      search: 'https://www.goodreads.com/search?q={q}' },
   ],
 } satisfies Site

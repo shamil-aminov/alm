@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { favorites, kinds, say, sectionName, tabs } from '~/utils/content'
+import { favorites, kinds, lookUp, say, sectionName, tabs } from '~/utils/content'
 import { pageTransition } from '~~/shared/motion'
 
 const { lang, label } = usePageLang()
@@ -17,7 +17,8 @@ const openTab = computed(() => {
   return known ? asked : firstTab
 })
 
-const shown = computed(() => cards.filter((card) => card.kind === openTab.value))
+const shown = computed(() => cards.filter((card) => card.kind === openTab.value)
+  .map((card) => ({ ...card, to: lookUp(card, kinds) })))
 const coverRatio = (kind: string) => kinds.find((k) => k.kind === kind)?.ratio ?? '1/1'
 
 function open(kind: string) {
@@ -45,8 +46,16 @@ usePageSeo(() => ({ title: sectionName('/favorite', lang) }))
           class="dissolve edge cards h-full overflow-y-auto overscroll-none pb-24"
           :style="{ '--shape': coverRatio(openTab), '--card-min': 'clamp(9rem, 33vw, 14rem)', '--card-share': '24%' }">
         <li v-for="(card, at) in shown" :key="at" class="staggered">
-          <Cover :src="card.cover" :alt="say(card.title, lang)" :ratio="coverRatio(card.kind)" />
-          <p class="fine optical mt-2">{{ say(card.title, lang) }}</p>
+          <a v-if="card.to" :href="card.to" target="_blank" rel="noreferrer" class="block">
+            <Cover :src="card.cover" :alt="say(card.title, lang)" :ratio="coverRatio(card.kind)" />
+          </a>
+          <Cover v-else :src="card.cover" :alt="say(card.title, lang)" :ratio="coverRatio(card.kind)" />
+
+          <p class="fine optical mt-2">
+            <a v-if="card.to" :href="card.to" target="_blank" rel="noreferrer"
+               class="underline-offset-4 hover:underline">{{ say(card.title, lang) }}</a>
+            <span v-else>{{ say(card.title, lang) }}</span>
+          </p>
           <p v-if="card.author" class="fine optical opacity-60">{{ say(card.author, lang) }}</p>
         </li>
       </ul>

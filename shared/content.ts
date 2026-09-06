@@ -15,6 +15,7 @@ export type Kind = {
   kind: string
   label: Localized
   ratio?: string
+  search?: string
 }
 
 export type Site = {
@@ -32,6 +33,7 @@ export type Favorite = {
   title?: Localized
   author?: Localized
   cover?: string
+  link?: string
 }
 
 export type Project = {
@@ -59,11 +61,22 @@ export type Page = {
   html: string
 }
 
+const SEARCH_LANG = 'en'
+
 export function say(value: Localized | undefined, lang: string): string {
   if (value === undefined) return ''
   if (typeof value === 'string') return value
 
   return value[lang] ?? Object.values(value)[0] ?? ''
+}
+
+export function lookUp(card: Favorite, kinds: Kind[]) {
+  if (card.link) return card.link
+
+  const template = kinds.find((one) => one.kind === card.kind)?.search
+  const asked = say(card.title, SEARCH_LANG)
+
+  return template && asked ? template.replace('{q}', encodeURIComponent(asked)) : undefined
 }
 
 export function byDate(a: { date?: string }, b: { date?: string }) {
