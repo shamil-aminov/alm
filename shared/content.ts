@@ -75,8 +75,11 @@ export function lookUp(card: Favorite, kinds: Kind[]) {
 
   const template = kinds.find((one) => one.kind === card.kind)?.search
   const asked = say(card.title, SEARCH_LANG)
+  if (!template || !asked) return undefined
 
-  return template && asked ? template.replace('{q}', encodeURIComponent(asked)) : undefined
+  return template
+    .replace('{q}', encodeURIComponent(asked))
+    .replace('{a}', encodeURIComponent(say(card.author, SEARCH_LANG)))
 }
 
 export function byDate(a: { date?: string }, b: { date?: string }) {

@@ -131,6 +131,7 @@ test.describe('what the build refuses to publish', () => {
 
 test.describe('where a card leads', () => {
   const KINDS = [{ kind: 'film', label: 'Films', search: 'https://elsewhere/search/{q}/' },
+                 { kind: 'music', label: 'Music', search: 'https://elsewhere/?q={q}+{a}' },
                  { kind: 'game', label: 'Games' }]
 
   test('asks in English, whatever language the page is in', () => {
@@ -145,6 +146,15 @@ test.describe('where a card leads', () => {
   test('a card that names its own address keeps it', () => {
     const card = { kind: 'film', title: 'Minecraft', link: 'https://minecraft.net/' }
     expect(lookUp(card, KINDS), 'the template overrode the card').toBe('https://minecraft.net/')
+  })
+
+  test('an album asks with its author, or Direct by Vangelis is any album at all', () => {
+    const card = { kind: 'music', title: 'Direct', author: 'Vangelis' }
+    expect(lookUp(card, KINDS)).toBe('https://elsewhere/?q=Direct+Vangelis')
+  })
+
+  test('an author nobody wrote down leaves the question, not the word undefined', () => {
+    expect(lookUp({ kind: 'music', title: 'Direct' }, KINDS)).toBe('https://elsewhere/?q=Direct+')
   })
 
   test('a kind without a search leads nowhere', () => {
