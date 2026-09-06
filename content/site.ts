@@ -28,7 +28,7 @@ export default {
   // {q} is the English title of the card, {a} its author. A card can name its own address instead.
   favorite: [
     { kind: 'film',  label: { ru: 'Фильмы', en: 'Films' }, ratio: '2/3',
-      search: 'https://letterboxd.com/search/films/{q}/' },
+      search: 'https://www.imdb.com/find/?q={q}&s=tt' },
     { kind: 'music', label: { ru: 'Музыка', en: 'Music' }, ratio: '1/1',
       search: 'https://music.youtube.com/search?q={q}+{a}' },
     { kind: 'game',  label: { ru: 'Игры',   en: 'Games' }, ratio: '2/3',
