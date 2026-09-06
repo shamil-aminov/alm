@@ -44,7 +44,7 @@ usePageSeo(() => ({ title: sectionName('/favorite', lang) }))
     <Transition v-bind="pageTransition">
       <ul :key="openTab" data-scroll="favorite"
           class="dissolve edge cards h-full overflow-y-auto overscroll-none pb-24"
-          :style="{ '--shape': coverRatio(openTab), '--card-min': 'clamp(9rem, 33vw, 14rem)', '--card-share': '24%' }">
+          :style="{ '--shape': coverRatio(openTab), '--card-min': 'clamp(9rem, 33vw, 14rem)', '--card-share': '19%' }">
         <li v-for="(card, at) in shown" :key="at" class="staggered">
           <a v-if="card.to" :href="card.to" target="_blank" rel="noreferrer" class="block">
             <Cover :src="card.cover" :alt="say(card.title, lang)" :ratio="coverRatio(card.kind)" />

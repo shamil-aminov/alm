@@ -146,3 +146,16 @@ test('a card leads out to its kind, both by the frame and by the caption', async
     'the frame and the caption should both lead to the same place').toBe(2)
   await expect(card.locator('a').first()).toHaveAttribute('target', '_blank')
 })
+
+test('past a point the page stops growing and moves in as one', async ({ page }) => {
+  await page.setViewportSize({ width: 3200, height: 900 })
+  await page.goto(POSTS && TRANSLATED ? `/blog/${TRANSLATED}` : '/')
+  await settled(page)
+
+  const header = await box(page, 'header nav a')
+  const column = await box(page, 'main .column')
+
+  expect(column.left, 'the text left the header behind at the edge').toBe(header.left)
+  expect(header.left, 'nothing moved in at all').toBeGreaterThan(200)
+  expect(column.width, 'the line grew past a readable measure').toBeLessThanOrEqual(704)
+})
