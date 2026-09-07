@@ -159,3 +159,31 @@ test('past a point the page stops growing and moves in as one', async ({ page })
   expect(header.left, 'nothing moved in at all').toBeGreaterThan(200)
   expect(column.width, 'the line grew past a readable measure').toBeLessThanOrEqual(704)
 })
+
+test('a big line hangs by its ink, not by the edge of its box', async ({ page }) => {
+  await page.goto('/')
+  await settled(page)
+
+  const ink = await page.evaluate(() => {
+    const pen = document.createElement('canvas').getContext('2d')!
+    const bearing = (el: Element) => {
+      const style = getComputedStyle(el)
+      pen.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+      return -pen.measureText(el.textContent!.trim()).actualBoundingBoxLeft
+    }
+    const head = document.querySelector('main :is(.big, .post h1)')
+    const body = document.querySelector('main p')
+    if (!head || !body) return undefined
+
+    return {
+      owed: bearing(head) - bearing(body),
+      head: head.getBoundingClientRect().left + bearing(head),
+      body: body.getBoundingClientRect().left + bearing(body),
+    }
+  })
+
+  test.skip(!ink, 'this poster has no headline over a paragraph')
+  expect(ink!.head - ink!.body,
+    `the headline is set ${ink!.owed.toFixed(1)}px in from the text below it`).toBeLessThan(1)
+  expect(ink!.head - ink!.body, 'the headline hangs out on its own').toBeGreaterThan(-3)
+})

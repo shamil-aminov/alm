@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import { alignOptically } from '~/utils/optical'
+
 const direction = useDirection()
 const inPlace = useInPlace()
 const swipe = useSwipe()
 
 const settled = ref(false)
-onMounted(() => requestAnimationFrame(() => requestAnimationFrame(() => { settled.value = true })))
+onMounted(() => {
+  requestAnimationFrame(() => requestAnimationFrame(() => { settled.value = true }))
+  alignOptically()
+  document.fonts?.ready.then(alignOptically)
+})
 
 onBeforeUnmount(watchMotion())
 </script>
