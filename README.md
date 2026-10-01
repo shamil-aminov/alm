@@ -1,6 +1,22 @@
-# alm
+<p align="center">
+  <img src="public/icon.svg" width="160" alt="alm">
+</p>
 
-A static personal site: poster, blog, projects, favorites.
+<h1 align="center">alm</h1>
+
+<p align="center">
+  <b>A static personal site: poster, blog, projects, favorites.</b>
+</p>
+
+<p align="center">
+  <a href="https://github.com/shamil-aminov/alm/actions/workflows/check.yml"><img src="https://img.shields.io/github/actions/workflow/status/shamil-aminov/alm/check.yml?branch=main&label=check&labelColor=000000" alt="Check"></a>
+  <a href="https://nuxt.com"><img src="https://img.shields.io/badge/Nuxt-4-ffffff?logo=nuxt&logoColor=white&labelColor=000000" alt="Nuxt 4"></a>
+  <a href="#content"><img src="https://img.shields.io/badge/output-static%20files-ffffff?labelColor=000000" alt="Static"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/shamil-aminov/alm?color=ffffff&labelColor=000000" alt="License: MIT"></a>
+  <a href="https://aminov.sh"><img src="https://img.shields.io/badge/live-aminov.sh-ffffff?labelColor=000000" alt="Live site"></a>
+  <a href="https://aminov.sh/en/blog/alm"><img src="https://img.shields.io/badge/story-aminov.sh-ffffff?labelColor=000000" alt="Story"></a>
+</p>
+
 Content is files in the repository; a build is a folder of static files.
 
 No database, no server, no login: the site has nowhere to write anything.
